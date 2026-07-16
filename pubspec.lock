@@ -102,6 +102,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_lucide:
+    dependency: "direct main"
+    description:
+      name: flutter_lucide
+      sha256: d2866c9ba75b2300e73a888489f0d7ef1d225e1c352d7e7f5c7fdff7d04e294c
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -147,14 +155,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
-  iconsax_flutter:
-    dependency: "direct main"
-    description:
-      name: iconsax_flutter
-      sha256: d14b4cec8586025ac15276bdd40f6eea308cb85748135965bb6255f14beb2564
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   jni:
     dependency: transitive
     description:

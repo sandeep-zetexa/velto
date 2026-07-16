@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 
@@ -118,7 +118,7 @@ class AppActivityRow extends StatelessWidget {
             const SizedBox(height: 2),
             Text(sub, style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
           ])),
-          Icon(Iconsax.arrow_right_3, size: 15, color: s.tertiary),
+          Icon(LucideIcons.chevron_right, size: 15, color: s.tertiary),
         ]),
       ),
     );

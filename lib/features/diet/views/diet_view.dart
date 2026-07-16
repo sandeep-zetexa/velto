@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
@@ -15,10 +15,10 @@ class DietView extends StatelessWidget {
     final s = AppStyle(isDark);
 
     final meals = [
-      _Meal('Breakfast', '8:00 AM', 'Avocado Toast & Egg Whites', 350, Iconsax.sun_1, isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, AppColors.tertiary),
-      _Meal('Lunch', '1:00 PM', 'Grilled Chicken & Quinoa', 520, Iconsax.cup, isDark ? AppColors.primarySoftDark : AppColors.primarySoft, AppColors.primary),
-      _Meal('Dinner', '7:30 PM', 'Baked Salmon & Broccoli', 480, Iconsax.moon, isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, AppColors.secondary),
-      _Meal('Snack', '4:00 PM', 'Almonds & Protein Shake', 290, Iconsax.apple, isDark ? AppColors.greenSoftDark : AppColors.greenSoft, AppColors.green),
+      _Meal('Breakfast', '8:00 AM', 'Avocado Toast & Egg Whites', 350, LucideIcons.sun, isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, AppColors.tertiary),
+      _Meal('Lunch', '1:00 PM', 'Grilled Chicken & Quinoa', 520, LucideIcons.utensils, isDark ? AppColors.primarySoftDark : AppColors.primarySoft, AppColors.primary),
+      _Meal('Dinner', '7:30 PM', 'Baked Salmon & Broccoli', 480, LucideIcons.moon, isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, AppColors.secondary),
+      _Meal('Snack', '4:00 PM', 'Almonds & Protein Shake', 290, LucideIcons.cookie, isDark ? AppColors.greenSoftDark : AppColors.greenSoft, AppColors.green),
     ];
 
     return Scaffold(
@@ -57,7 +57,7 @@ class DietView extends StatelessWidget {
                   Text('Goal: 2,200 kcal', style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
                   const SizedBox(height: AppSizes.sm),
                   Row(children: [
-                    const Icon(Iconsax.tick_circle, size: 13, color: AppColors.primary),
+                    const Icon(LucideIcons.circle_check, size: 13, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text('On track', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
                   ]),
@@ -68,11 +68,11 @@ class DietView extends StatelessWidget {
               AppSectionHeader(title: 'Macros', isDark: isDark),
               const SizedBox(height: AppSizes.md),
               Row(children: [
-                Expanded(child: _MacroCard('Protein', 110, 150, 'g', AppColors.primary, Iconsax.health, s)),
+                Expanded(child: _MacroCard('Protein', 110, 150, 'g', AppColors.primary, LucideIcons.beef, s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _MacroCard('Carbs', 180, 220, 'g', AppColors.secondary, Iconsax.flash_circle, s)),
+                Expanded(child: _MacroCard('Carbs', 180, 220, 'g', AppColors.secondary, LucideIcons.wheat, s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _MacroCard('Fats', 50, 70, 'g', AppColors.tertiary, Iconsax.drop, s)),
+                Expanded(child: _MacroCard('Fats', 50, 70, 'g', AppColors.tertiary, LucideIcons.droplet, s)),
               ]),
               const SizedBox(height: AppSizes.xl),
 
@@ -84,7 +84,7 @@ class DietView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, borderRadius: BorderRadius.circular(8)),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Iconsax.add, size: 13, color: AppColors.primary),
+                      const Icon(LucideIcons.plus, size: 13, color: AppColors.primary),
                       const SizedBox(width: 4),
                       Text('Add meal', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     ]),

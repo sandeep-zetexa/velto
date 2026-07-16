@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
@@ -26,7 +26,7 @@ class DashboardView extends StatelessWidget {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: AppSizes.md),
-                child: AppIconBtn(icon: Iconsax.notification, isDark: isDark),
+                child: AppIconBtn(icon: LucideIcons.bell, isDark: isDark),
               ),
             ],
           ),
@@ -68,24 +68,24 @@ class DashboardView extends StatelessWidget {
               AppSectionHeader(title: "Today's Stats", isDark: isDark),
               const SizedBox(height: AppSizes.md),
               Row(children: [
-                Expanded(child: _StatCard(icon: Iconsax.health, iconBg: isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, iconColor: AppColors.tertiary, value: '480', unit: 'kcal', label: 'Burned', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.flame, iconBg: isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, iconColor: AppColors.tertiary, value: '480', unit: 'kcal', label: 'Burned', s: s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatCard(icon: Iconsax.routing, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, value: '7.4k', unit: 'steps', label: 'Steps', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.footprints, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, value: '7.4k', unit: 'steps', label: 'Steps', s: s)),
               ]),
               const SizedBox(height: AppSizes.md),
               Row(children: [
-                Expanded(child: _StatCard(icon: Iconsax.clock, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, value: '42', unit: 'min', label: 'Active', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.clock, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, value: '42', unit: 'min', label: 'Active', s: s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatCard(icon: Iconsax.drop, iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft, iconColor: AppColors.blue, value: '1.2', unit: 'L', label: 'Hydration', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.droplet, iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft, iconColor: AppColors.blue, value: '1.2', unit: 'L', label: 'Hydration', s: s)),
               ]),
               const SizedBox(height: AppSizes.xl),
 
               // ── Activity ──────────────────────────────────────────────
               AppSectionHeader(title: 'Recent Activity', action: 'See all', isDark: isDark),
               const SizedBox(height: AppSizes.md),
-              AppActivityRow(icon: Iconsax.weight, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, title: 'Leg Day Strength', sub: 'Today · 45 min', isDark: isDark),
-              AppActivityRow(icon: Iconsax.activity, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, title: 'Morning Run', sub: 'Yesterday · 32 min', isDark: isDark),
-              AppActivityRow(icon: Iconsax.health, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Nutrition Goal Met', sub: '2 days ago', isDark: isDark),
+              AppActivityRow(icon: LucideIcons.dumbbell, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, title: 'Leg Day Strength', sub: 'Today · 45 min', isDark: isDark),
+              AppActivityRow(icon: LucideIcons.activity, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, title: 'Morning Run', sub: 'Yesterday · 32 min', isDark: isDark),
+              AppActivityRow(icon: LucideIcons.apple, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Nutrition Goal Met', sub: '2 days ago', isDark: isDark),
             ])),
           ),
         ],

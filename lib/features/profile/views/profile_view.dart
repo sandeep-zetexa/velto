@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
@@ -34,7 +34,7 @@ class ProfileView extends StatelessWidget {
                 Container(
                   width: 58, height: 58,
                   decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft),
-                  child: const Icon(Iconsax.profile_circle, color: AppColors.primary, size: 28),
+                  child: const Icon(LucideIcons.user, color: AppColors.primary, size: 28),
                 ),
                 const SizedBox(width: AppSizes.md),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -48,26 +48,26 @@ class ProfileView extends StatelessWidget {
                     child: Text('Pro Member', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
                   ),
                 ])),
-                Icon(Iconsax.edit_2, size: 17, color: s.tertiary),
+                Icon(LucideIcons.pen, size: 17, color: s.tertiary),
               ])),
               const SizedBox(height: AppSizes.lg),
 
               // Stats
               Row(children: [
-                Expanded(child: _StatBand('24', 'Workouts', Iconsax.activity, s)),
+                Expanded(child: _StatBand('24', 'Workouts', LucideIcons.activity, s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatBand('−4.2 kg', 'Lost', Iconsax.trend_down, s)),
+                Expanded(child: _StatBand('−4.2 kg', 'Lost', LucideIcons.trending_down, s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatBand('14', 'Streak', Iconsax.flash_circle, s)),
+                Expanded(child: _StatBand('14', 'Streak', LucideIcons.zap, s)),
               ]),
               const SizedBox(height: AppSizes.xl),
 
               _Label('Settings', s),
               const SizedBox(height: AppSizes.sm),
-              _Tile(icon: Iconsax.profile_circle, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, title: 'Account Information', isDark: isDark, s: s, onTap: () {}),
-              _Tile(icon: Iconsax.notification, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, title: 'Notifications', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.user, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, title: 'Account Information', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.bell, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, title: 'Notifications', isDark: isDark, s: s, onTap: () {}),
               _Tile(
-                icon: isDark ? Iconsax.sun_1 : Iconsax.moon,
+                icon: isDark ? LucideIcons.sun : LucideIcons.moon,
                 iconBg: isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft,
                 iconColor: isDark ? AppColors.tertiary : AppColors.tertiary,
                 title: isDark ? 'Light Mode' : 'Dark Mode',
@@ -87,8 +87,8 @@ class ProfileView extends StatelessWidget {
 
               _Label('Support', s),
               const SizedBox(height: AppSizes.sm),
-              _Tile(icon: Iconsax.message_question, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Help Center', isDark: isDark, s: s, onTap: () {}),
-              _Tile(icon: Iconsax.shield_tick, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Privacy Policy', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.circle_question_mark, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Help Center', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.shield_check, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Privacy Policy', isDark: isDark, s: s, onTap: () {}),
               const SizedBox(height: AppSizes.xl),
 
               SizedBox(
@@ -100,7 +100,7 @@ class ProfileView extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.radiusLg)),
                   ),
                   onPressed: () {},
-                  icon: const Icon(Iconsax.logout, size: 17),
+                  icon: const Icon(LucideIcons.log_out, size: 17),
                   label: Text('Log Out', style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
               ),
@@ -164,7 +164,7 @@ class _Tile extends StatelessWidget {
             Container(width: 36, height: 36, decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(9)), child: Icon(icon, size: 17, color: iconColor)),
             const SizedBox(width: AppSizes.md),
             Expanded(child: Text(title, style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w600, color: s.primary))),
-            trailing ?? Icon(Iconsax.arrow_right_3, size: 15, color: s.tertiary),
+            trailing ?? Icon(LucideIcons.chevron_right, size: 15, color: s.tertiary),
           ]),
         ),
       ),

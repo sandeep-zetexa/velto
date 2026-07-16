@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 
@@ -16,10 +16,10 @@ class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({super.key, required this.currentIndex, required this.onTap});
 
   static const _items = [
-    _NavItem(icon: Iconsax.element_3,      label: 'Dashboard'),
-    _NavItem(icon: Iconsax.activity,       label: 'Workout'),
-    _NavItem(icon: Iconsax.health,         label: 'Diet'),
-    _NavItem(icon: Iconsax.profile_circle, label: 'Profile'),
+    _NavItem(icon: LucideIcons.layout_dashboard, label: 'Dashboard'),
+    _NavItem(icon: LucideIcons.dumbbell,         label: 'Workout'),
+    _NavItem(icon: LucideIcons.apple,            label: 'Diet'),
+    _NavItem(icon: LucideIcons.user,             label: 'Profile'),
   ];
 
   @override

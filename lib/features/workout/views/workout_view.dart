@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
@@ -14,13 +14,13 @@ class WorkoutView extends StatelessWidget {
     final s = AppStyle(isDark);
 
     final routines = [
-      _Routine('Leg Day Strength', '45 min', 'Intermediate', '8 exercises', Iconsax.weight,
+      _Routine('Leg Day Strength', '45 min', 'Intermediate', '8 exercises', LucideIcons.dumbbell,
           isDark ? AppColors.primarySoftDark : AppColors.primarySoft, AppColors.primary),
-      _Routine('Core Conditioning', '20 min', 'Beginner', '5 exercises', Iconsax.chart_21,
+      _Routine('Core Conditioning', '20 min', 'Beginner', '5 exercises', LucideIcons.heart_pulse,
           isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, AppColors.secondary),
-      _Routine('HIIT Cardio Burn', '35 min', 'Advanced', '10 exercises', Iconsax.flash_circle,
+      _Routine('HIIT Cardio Burn', '35 min', 'Advanced', '10 exercises', LucideIcons.zap,
           isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, AppColors.tertiary),
-      _Routine('Recovery & Stretch', '15 min', 'Easy', '6 exercises', Iconsax.health,
+      _Routine('Recovery & Stretch', '15 min', 'Easy', '6 exercises', LucideIcons.sparkles,
           isDark ? AppColors.greenSoftDark : AppColors.greenSoft, AppColors.green),
     ];
 
@@ -82,7 +82,7 @@ class WorkoutView extends StatelessWidget {
                 Container(
                   width: 52, height: 52,
                   decoration: BoxDecoration(color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, shape: BoxShape.circle),
-                  child: const Icon(Iconsax.play_circle, color: AppColors.primary, size: 26),
+                  child: const Icon(LucideIcons.play, color: AppColors.primary, size: 20),
                 ),
               ])),
               const SizedBox(height: AppSizes.xl),
@@ -100,7 +100,7 @@ class WorkoutView extends StatelessWidget {
                     const SizedBox(height: 5),
                     Wrap(spacing: 5, children: [_tag(r.duration, isDark, s), _tag(r.exercises, isDark, s), _tag(r.level, isDark, s)]),
                   ])),
-                  Icon(Iconsax.arrow_right_3, size: 15, color: s.tertiary),
+                  Icon(LucideIcons.chevron_right, size: 15, color: s.tertiary),
                 ])),
               )),
             ])),
@@ -132,7 +132,7 @@ Widget _dayCell(String letter, String label, bool done, bool isToday, bool isDar
         ),
         alignment: Alignment.center,
         child: done
-            ? const Icon(Iconsax.tick_circle, color: Colors.white, size: 14)
+            ? const Icon(LucideIcons.check, color: Colors.white, size: 14)
             : Text(letter, style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w700,
                 color: isToday ? AppColors.primary : s.secondary)),
       ),
