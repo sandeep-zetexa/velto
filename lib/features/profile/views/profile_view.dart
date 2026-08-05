@@ -17,12 +17,10 @@ class ProfileView extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            floating: true, snap: true, toolbarHeight: 72,
-            title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Account', style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w500, color: s.secondary)),
-              Text('Profile', style: GoogleFonts.manrope(fontSize: 24, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.5)),
-            ]),
+          AppSliverAppBar(
+            title: 'Profile',
+            subtitle: 'Account',
+            isDark: isDark,
           ),
 
           SliverPadding(

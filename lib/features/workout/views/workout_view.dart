@@ -27,12 +27,10 @@ class WorkoutView extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            floating: true, snap: true, toolbarHeight: 72,
-            title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Training', style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w500, color: s.secondary)),
-              Text('Workout', style: GoogleFonts.manrope(fontSize: 24, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.4)),
-            ]),
+          AppSliverAppBar(
+            title: 'Workout',
+            subtitle: 'Training',
+            isDark: isDark,
           ),
 
           SliverPadding(

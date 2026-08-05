@@ -17,12 +17,10 @@ class DashboardView extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            floating: true, snap: true, toolbarHeight: 72,
-            title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Good morning', style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w500, color: s.secondary)),
-              Text('Alex 👋', style: GoogleFonts.manrope(fontSize: 24, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.4)),
-            ]),
+          AppSliverAppBar(
+            title: 'Alex 👋',
+            subtitle: 'Good morning',
+            isDark: isDark,
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: AppSizes.md),
