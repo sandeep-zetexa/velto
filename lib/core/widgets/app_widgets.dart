@@ -85,6 +85,110 @@ class AppSectionHeader extends StatelessWidget {
   }
 }
 
+/// Universal empty-state placeholder widget.
+///
+/// Show this whenever a list or section has no data to display.
+/// [icon] defaults to [LucideIcons.inbox] if not provided.
+/// Supply [actionLabel] + [onAction] to render a tappable call-to-action.
+class AppEmptyState extends StatelessWidget {
+  final IconData? icon;
+  final Color? iconColor;
+  final Color? iconBg;
+  final String title;
+  final String? subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final bool isDark;
+
+  const AppEmptyState({
+    super.key,
+    this.icon,
+    this.iconColor,
+    this.iconBg,
+    required this.title,
+    this.subtitle,
+    this.actionLabel,
+    this.onAction,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppStyle(isDark);
+    final resolvedIconColor = iconColor ?? AppColors.primary;
+    final resolvedIconBg = iconBg ??
+        (isDark ? AppColors.primarySoftDark : AppColors.primarySoft);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSizes.xl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Icon bubble
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: resolvedIconBg,
+              borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+            ),
+            child: Icon(
+              icon ?? LucideIcons.inbox,
+              size: 28,
+              color: resolvedIconColor,
+            ),
+          ),
+          const SizedBox(height: AppSizes.md),
+
+          // Title
+          Text(
+            title,
+            style: GoogleFonts.manrope(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: s.primary,
+              letterSpacing: -0.2,
+            ),
+          ),
+
+          // Subtitle
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(fontSize: 12, color: s.secondary),
+            ),
+          ],
+
+          // Optional action button
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: AppSizes.md),
+            GestureDetector(
+              onTap: onAction,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: resolvedIconBg,
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                ),
+                child: Text(
+                  actionLabel!,
+                  style: GoogleFonts.manrope(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: resolvedIconColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 /// List row: icon swatch + title + subtitle + chevron.
 class AppActivityRow extends StatelessWidget {
   final IconData icon;

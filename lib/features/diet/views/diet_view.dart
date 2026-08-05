@@ -15,10 +15,10 @@ class DietView extends StatelessWidget {
     final s = AppStyle(isDark);
 
     final meals = [
-      _Meal('Breakfast', '8:00 AM', 'Avocado Toast & Egg Whites', 350, LucideIcons.sun, isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, AppColors.tertiary),
-      _Meal('Lunch', '1:00 PM', 'Grilled Chicken & Quinoa', 520, LucideIcons.utensils, isDark ? AppColors.primarySoftDark : AppColors.primarySoft, AppColors.primary),
-      _Meal('Dinner', '7:30 PM', 'Baked Salmon & Broccoli', 480, LucideIcons.moon, isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, AppColors.secondary),
-      _Meal('Snack', '4:00 PM', 'Almonds & Protein Shake', 290, LucideIcons.cookie, isDark ? AppColors.greenSoftDark : AppColors.greenSoft, AppColors.green),
+      // _Meal('Breakfast', '8:00 AM', 'Avocado Toast & Egg Whites', 350, LucideIcons.sun, isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, AppColors.tertiary),
+      // _Meal('Lunch', '1:00 PM', 'Grilled Chicken & Quinoa', 520, LucideIcons.utensils, isDark ? AppColors.primarySoftDark : AppColors.primarySoft, AppColors.primary),
+      // _Meal('Dinner', '7:30 PM', 'Baked Salmon & Broccoli', 480, LucideIcons.moon, isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, AppColors.secondary),
+      // _Meal('Snack', '4:00 PM', 'Almonds & Protein Shake', 290, LucideIcons.cookie, isDark ? AppColors.greenSoftDark : AppColors.greenSoft, AppColors.green),
     ];
 
     return Scaffold(
@@ -50,11 +50,11 @@ class DietView extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSizes.lg),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Daily Calories', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w600, color: s.secondary)),
+                  Text('Today\'s Calories', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w600, color: s.secondary)),
                   const SizedBox(height: 4),
                   Text('560 remaining', style: GoogleFonts.manrope(fontSize: 18, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.3)),
                   const SizedBox(height: 4),
-                  Text('Goal: 2,200 kcal', style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
+                  Text('of 2,200 kcal', style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
                   const SizedBox(height: AppSizes.sm),
                   Row(children: [
                     const Icon(LucideIcons.circle_check, size: 13, color: AppColors.primary),
@@ -63,16 +63,16 @@ class DietView extends StatelessWidget {
                   ]),
                 ])),
               ])),
-              const SizedBox(height: AppSizes.xl),
+              const SizedBox(height: AppSizes.md),
 
               AppSectionHeader(title: 'Macros', isDark: isDark),
-              const SizedBox(height: AppSizes.md),
+              const SizedBox(height: AppSizes.sm),
               Row(children: [
-                Expanded(child: _MacroCard('Protein', 110, 150, 'g', AppColors.primary, LucideIcons.beef, s)),
+                Expanded(child: _MacroCard('Protein', 110, 150, 'g', AppColors.macroProtein, isDark ? AppColors.macroProteinSoftDark : AppColors.macroProteinSoft, LucideIcons.beef, s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _MacroCard('Carbs', 180, 220, 'g', AppColors.secondary, LucideIcons.wheat, s)),
+                Expanded(child: _MacroCard('Carbs', 180, 220, 'g', AppColors.macroCarbs, isDark ? AppColors.macroCarbsSoftDark : AppColors.macroCarsbSoft, LucideIcons.wheat, s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _MacroCard('Fats', 50, 70, 'g', AppColors.tertiary, LucideIcons.droplet, s)),
+                Expanded(child: _MacroCard('Fats', 50, 70, 'g', AppColors.macroFats, isDark ? AppColors.macroFatsSoftDark : AppColors.macroFatsSoft, LucideIcons.droplet, s)),
               ]),
               const SizedBox(height: AppSizes.xl),
 
@@ -86,33 +86,43 @@ class DietView extends StatelessWidget {
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       const Icon(LucideIcons.plus, size: 13, color: AppColors.primary),
                       const SizedBox(width: 4),
-                      Text('Add meal', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      Text('Log meal', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     ]),
                   ),
                 ),
               ]),
               const SizedBox(height: AppSizes.md),
 
-              ...meals.map((m) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSizes.sm),
-                child: AppCard(isDark: isDark, padding: const EdgeInsets.all(AppSizes.md), child: Row(children: [
-                  Container(width: 44, height: 44, decoration: BoxDecoration(color: m.iconBg, borderRadius: BorderRadius.circular(11)), child: Icon(m.icon, size: 20, color: m.iconColor)),
-                  const SizedBox(width: AppSizes.md),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Text(m.name, style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w700, color: s.primary)),
-                      const SizedBox(width: 6),
-                      Text('· ${m.time}', style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
+              if (meals.isEmpty)
+                AppEmptyState(
+                  isDark: isDark,
+                  icon: LucideIcons.utensils_crossed,
+                  title: 'Nothing logged yet',
+                  subtitle: 'Tap "Log meal" to track your\nfirst meal of the day.',
+                  actionLabel: '+ Log meal',
+                  onAction: () {},
+                )
+              else
+                ...meals.map((m) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSizes.sm),
+                  child: AppCard(isDark: isDark, padding: const EdgeInsets.all(AppSizes.md), child: Row(children: [
+                    Container(width: 44, height: 44, decoration: BoxDecoration(color: m.iconBg, borderRadius: BorderRadius.circular(11)), child: Icon(m.icon, size: 20, color: m.iconColor)),
+                    const SizedBox(width: AppSizes.md),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        Text(m.name, style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w700, color: s.primary)),
+                        const SizedBox(width: 6),
+                        Text('· ${m.time}', style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
+                      ]),
+                      const SizedBox(height: 2),
+                      Text(m.item, style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
+                    ])),
+                    Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                      Text('${m.calories}', style: GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w800, color: s.primary)),
+                      Text('kcal', style: GoogleFonts.manrope(fontSize: 10, color: s.secondary)),
                     ]),
-                    const SizedBox(height: 2),
-                    Text(m.item, style: GoogleFonts.manrope(fontSize: 11, color: s.secondary)),
                   ])),
-                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text('${m.calories}', style: GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w800, color: s.primary)),
-                    Text('kcal', style: GoogleFonts.manrope(fontSize: 10, color: s.secondary)),
-                  ]),
-                ])),
-              )),
+                )),
             ])),
           ),
         ],
@@ -133,16 +143,21 @@ class _MacroCard extends StatelessWidget {
   final String name, unit;
   final int current, goal;
   final Color color;
+  final Color iconBg;
   final IconData icon;
   final AppStyle s;
-  const _MacroCard(this.name, this.current, this.goal, this.unit, this.color, this.icon, this.s);
+  const _MacroCard(this.name, this.current, this.goal, this.unit, this.color, this.iconBg, this.icon, this.s);
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(AppSizes.md),
     decoration: BoxDecoration(color: s.surface, borderRadius: BorderRadius.circular(AppSizes.radiusLg), border: Border.all(color: s.border)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, size: 16, color: color),
-      const SizedBox(height: 6),
+      Container(
+        width: 30, height: 30,
+        decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, size: 15, color: color),
+      ),
+      const SizedBox(height: 8),
       Text(name, style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w600, color: s.secondary)),
       const SizedBox(height: 2),
       Text('$current$unit', style: GoogleFonts.manrope(fontSize: 17, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.3)),
@@ -150,7 +165,7 @@ class _MacroCard extends StatelessWidget {
       const SizedBox(height: AppSizes.sm),
       ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: LinearProgressIndicator(value: current / goal, minHeight: 3, backgroundColor: color.withValues(alpha: 0.12), valueColor: AlwaysStoppedAnimation<Color>(color)),
+        child: LinearProgressIndicator(value: current / goal, minHeight: 4, backgroundColor: color.withValues(alpha: 0.12), valueColor: AlwaysStoppedAnimation<Color>(color)),
       ),
     ]),
   );

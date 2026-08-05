@@ -35,6 +35,22 @@ class AppColors {
   static const Color blueSoft  = Color(0xFFDBEAFE);
   static const Color blueSoftDark = Color(0xFF0A1A2D);
 
+  // ── Macro nutrients ──────────────────────────────────────────────────────
+  // Protein – bold cobalt blue (strength, muscle, cold)
+  static const Color macroProtein         = Color(0xFF2563EB);
+  static const Color macroProteinSoft     = Color(0xFFDBEAFE);
+  static const Color macroProteinSoftDark = Color(0xFF0C1E3D);
+
+  // Carbs – vibrant orange (energy, warmth, quick fuel)
+  static const Color macroCarbs         = Color(0xFFF97316);
+  static const Color macroCarsbSoft     = Color(0xFFFFEDD5);
+  static const Color macroCarbsSoftDark = Color(0xFF3A1700);
+
+  // Fats – dark golden yellow (oils, avocado, butter — rich and warm)
+  static const Color macroFats         = Color(0xFFCA8A04);
+  static const Color macroFatsSoft     = Color(0xFFFEF9C3);
+  static const Color macroFatsSoftDark = Color(0xFF2D2000);
+
   // ── Neutral – Light Theme ─────────────────────────────────────────────────
   static const Color bgLight          = Color(0xFFF8FAFC);
   static const Color surfaceLight     = Color(0xFFFFFFFF);
