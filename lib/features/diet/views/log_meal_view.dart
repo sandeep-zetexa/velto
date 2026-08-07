@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:velto/core/constants/app_colors.dart';
+import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 
 class LogMealView extends StatelessWidget {
@@ -18,7 +19,20 @@ class LogMealView extends StatelessWidget {
         onBackPressed: () => Get.back(),
         isDark: isDark,
       ),
-      body: const SizedBox.shrink(),
+      body: Padding(
+        padding: const EdgeInsets.all(AppSizes.lg),
+        child: Column(
+          children: [
+            AppSearchBar(
+              hintText: 'Search ingredients',
+              isDark: isDark,
+              onChanged: (value) {
+                debugPrint('Search query: $value');
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

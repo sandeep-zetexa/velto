@@ -348,3 +348,110 @@ class AppSliverAppBar extends StatelessWidget {
   }
 }
 
+/// Dynamic reusable SearchBar widget matching the application design system.
+class AppSearchBar extends StatefulWidget {
+  final String hintText;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final TextEditingController? controller;
+  final bool isDark;
+  final EdgeInsetsGeometry? margin;
+
+  const AppSearchBar({
+    super.key,
+    this.hintText = 'Search...',
+    this.onChanged,
+    this.onSubmitted,
+    this.controller,
+    required this.isDark,
+    this.margin,
+  });
+
+  @override
+  State<AppSearchBar> createState() => _AppSearchBarState();
+}
+
+class _AppSearchBarState extends State<AppSearchBar> {
+  late final TextEditingController _controller;
+  bool _ownsController = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller != null) {
+      _controller = widget.controller!;
+    } else {
+      _controller = TextEditingController();
+      _ownsController = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppStyle(widget.isDark);
+
+    return Container(
+      margin: widget.margin,
+      decoration: BoxDecoration(
+        color: s.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        border: Border.all(color: s.border),
+      ),
+      child: TextField(
+        controller: _controller,
+        onChanged: (val) {
+          setState(() {});
+          widget.onChanged?.call(val);
+        },
+        onSubmitted: widget.onSubmitted,
+        style: GoogleFonts.manrope(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: s.primary,
+        ),
+        decoration: InputDecoration(
+          hintText: widget.hintText,
+          hintStyle: GoogleFonts.manrope(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: s.tertiary,
+          ),
+          prefixIcon: Icon(
+            LucideIcons.search,
+            size: 18,
+            color: s.secondary,
+          ),
+          suffixIcon: _controller.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    _controller.clear();
+                    widget.onChanged?.call('');
+                    setState(() {});
+                  },
+                  child: Icon(
+                    LucideIcons.x,
+                    size: 16,
+                    color: s.tertiary,
+                  ),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.md,
+            vertical: 14,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
