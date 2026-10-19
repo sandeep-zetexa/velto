@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
+import 'package:velto/core/widgets/app_button.dart';
+export 'package:velto/core/widgets/app_button.dart';
 
 /// Resolved colour tokens for the current theme mode.
 class AppStyle {
@@ -11,13 +13,17 @@ class AppStyle {
   final Color tertiary;
   final Color surface;
   final Color border;
+  final Color brand;
+  final Color brandSoft;
 
   AppStyle(bool isDark)
       : primary   = isDark ? AppColors.textPrimaryDark   : AppColors.textPrimaryLight,
         secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
         tertiary  = isDark ? AppColors.textTertiaryDark  : AppColors.textTertiaryLight,
         surface   = isDark ? AppColors.surfaceDark       : AppColors.surfaceLight,
-        border    = isDark ? AppColors.borderDark        : AppColors.borderLight;
+        border    = isDark ? AppColors.borderDark        : AppColors.borderLight,
+        brand     = isDark ? AppColors.primaryDark       : AppColors.primary,
+        brandSoft = isDark ? AppColors.primarySoftDark   : AppColors.primarySoft;
 }
 
 /// Standard bordered card container.
@@ -80,7 +86,7 @@ class AppSectionHeader extends StatelessWidget {
           fontSize: 15, fontWeight: FontWeight.w700, color: s.primary, letterSpacing: -0.2)),
       if (action != null)
         Text(action!, style: GoogleFonts.manrope(
-            fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+            fontSize: 12, fontWeight: FontWeight.w600, color: s.brand)),
     ]);
   }
 }
@@ -115,9 +121,8 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = AppStyle(isDark);
-    final resolvedIconColor = iconColor ?? AppColors.primary;
-    final resolvedIconBg = iconBg ??
-        (isDark ? AppColors.primarySoftDark : AppColors.primarySoft);
+    final resolvedIconColor = iconColor ?? s.brand;
+    final resolvedIconBg = iconBg ?? s.brandSoft;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSizes.xl),
@@ -164,23 +169,12 @@ class AppEmptyState extends StatelessWidget {
           // Optional action button
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: AppSizes.md),
-            GestureDetector(
-              onTap: onAction,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: resolvedIconBg,
-                  borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                ),
-                child: Text(
-                  actionLabel!,
-                  style: GoogleFonts.manrope(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: resolvedIconColor,
-                  ),
-                ),
-              ),
+            AppButton(
+              text: actionLabel!,
+              onPressed: onAction,
+              size: AppButtonSize.sm,
+              customBgColor: resolvedIconBg,
+              customTextColor: resolvedIconColor,
             ),
           ],
         ],

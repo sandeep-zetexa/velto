@@ -56,12 +56,34 @@ class MealModel {
       case 'breakfast':
         return AppColors.amber;
       case 'lunch':
-        return AppColors.primary;
+        return isDark ? AppColors.primaryDark : AppColors.primary;
       case 'dinner':
-        return AppColors.secondary;
+        return isDark ? const Color(0xFF94A3B8) : AppColors.secondary;
       case 'snack':
       default:
-        return AppColors.tertiary;
+        return isDark ? const Color(0xFFF97316) : AppColors.tertiary;
     }
+  }
+
+  MealModel copyWith({
+    String? id,
+    String? category,
+    String? time,
+    String? title,
+    int? calories,
+    int? protein,
+    int? carbs,
+    int? fats,
+  }) {
+    return MealModel(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      time: time ?? this.time,
+      title: title ?? this.title,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fats: fats ?? this.fats,
+    );
   }
 }

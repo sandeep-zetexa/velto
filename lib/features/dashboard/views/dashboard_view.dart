@@ -37,7 +37,7 @@ class DashboardView extends StatelessWidget {
               AppCard(isDark: isDark, child: Row(children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Week 3 · Phase 1', style: GoogleFonts.manrope(
-                      fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                      fontSize: 12, fontWeight: FontWeight.w600, color: s.brand)),
                   const SizedBox(height: 4),
                   Text('Keep the momentum\ngoing!', style: GoogleFonts.manrope(
                       fontSize: 18, fontWeight: FontWeight.w800, color: s.primary, height: 1.25, letterSpacing: -0.3)),
@@ -52,7 +52,7 @@ class DashboardView extends StatelessWidget {
                 SizedBox(
                   width: 80, height: 80,
                   child: CustomPaint(
-                    painter: _RingPainter(progress: 0.67, color: AppColors.primary, trackColor: isDark ? AppColors.borderDark : AppColors.borderLight),
+                    painter: _RingPainter(progress: 0.67, color: s.brand, trackColor: isDark ? AppColors.borderDark : AppColors.borderLight),
                     child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Text('67%', style: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w800, color: s.primary)),
                       Text('Goal', style: GoogleFonts.manrope(fontSize: 9, fontWeight: FontWeight.w500, color: s.secondary)),
@@ -66,24 +66,24 @@ class DashboardView extends StatelessWidget {
               AppSectionHeader(title: "Today's Stats", isDark: isDark),
               const SizedBox(height: AppSizes.md),
               Row(children: [
-                Expanded(child: _StatCard(icon: LucideIcons.flame, iconBg: isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, iconColor: AppColors.tertiary, value: '480', unit: 'kcal', label: 'Burned', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.flame, iconBg: isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft, iconColor: isDark ? const Color(0xFFF97316) : AppColors.tertiary, value: '480', unit: 'kcal', label: 'Burned', s: s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatCard(icon: LucideIcons.footprints, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, value: '7.4k', unit: 'steps', label: 'Steps', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.footprints, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: isDark ? const Color(0xFF94A3B8) : AppColors.secondary, value: '7.4k', unit: 'steps', label: 'Steps', s: s)),
               ]),
               const SizedBox(height: AppSizes.md),
               Row(children: [
-                Expanded(child: _StatCard(icon: LucideIcons.clock, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, value: '42', unit: 'min', label: 'Active', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.clock, iconBg: s.brandSoft, iconColor: s.brand, value: '42', unit: 'min', label: 'Active', s: s)),
                 const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatCard(icon: LucideIcons.droplet, iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft, iconColor: AppColors.blue, value: '1.2', unit: 'L', label: 'Hydration', s: s)),
+                Expanded(child: _StatCard(icon: LucideIcons.droplet, iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft, iconColor: isDark ? const Color(0xFF60A5FA) : AppColors.blue, value: '1.2', unit: 'L', label: 'Hydration', s: s)),
               ]),
               const SizedBox(height: AppSizes.xl),
 
               // ── Activity ──────────────────────────────────────────────
               AppSectionHeader(title: 'Recent Activity', action: 'See all', isDark: isDark),
               const SizedBox(height: AppSizes.md),
-              AppActivityRow(icon: LucideIcons.dumbbell, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, title: 'Leg Day Strength', sub: 'Today · 45 min', isDark: isDark),
-              AppActivityRow(icon: LucideIcons.activity, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, title: 'Morning Run', sub: 'Yesterday · 32 min', isDark: isDark),
-              AppActivityRow(icon: LucideIcons.apple, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Nutrition Goal Met', sub: '2 days ago', isDark: isDark),
+              AppActivityRow(icon: LucideIcons.dumbbell, iconBg: s.brandSoft, iconColor: s.brand, title: 'Leg Day Strength', sub: 'Today · 45 min', isDark: isDark),
+              AppActivityRow(icon: LucideIcons.activity, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: isDark ? const Color(0xFF94A3B8) : AppColors.secondary, title: 'Morning Run', sub: 'Yesterday · 32 min', isDark: isDark),
+              AppActivityRow(icon: LucideIcons.apple, iconBg: s.brandSoft, iconColor: s.brand, title: 'Nutrition Goal Met', sub: '2 days ago', isDark: isDark),
             ])),
           ),
         ],

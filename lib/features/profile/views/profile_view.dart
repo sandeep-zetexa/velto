@@ -31,8 +31,8 @@ class ProfileView extends StatelessWidget {
               AppCard(isDark: isDark, child: Row(children: [
                 Container(
                   width: 58, height: 58,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft),
-                  child: const Icon(LucideIcons.user, color: AppColors.primary, size: 28),
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: s.brandSoft),
+                  child: Icon(LucideIcons.user, color: s.brand, size: 28),
                 ),
                 const SizedBox(width: AppSizes.md),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -42,8 +42,8 @@ class ProfileView extends StatelessWidget {
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, borderRadius: BorderRadius.circular(6)),
-                    child: Text('Pro Member', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    decoration: BoxDecoration(color: s.brandSoft, borderRadius: BorderRadius.circular(6)),
+                    child: Text('Pro Member', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: s.brand)),
                   ),
                 ])),
                 Icon(LucideIcons.pen, size: 17, color: s.tertiary),
@@ -62,12 +62,12 @@ class ProfileView extends StatelessWidget {
 
               _Label('Settings', s),
               const SizedBox(height: AppSizes.sm),
-              _Tile(icon: LucideIcons.user, iconBg: isDark ? AppColors.primarySoftDark : AppColors.primarySoft, iconColor: AppColors.primary, title: 'Account Information', isDark: isDark, s: s, onTap: () {}),
-              _Tile(icon: LucideIcons.bell, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: AppColors.secondary, title: 'Notifications', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.user, iconBg: s.brandSoft, iconColor: s.brand, title: 'Account Information', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.bell, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: isDark ? const Color(0xFF94A3B8) : AppColors.secondary, title: 'Notifications', isDark: isDark, s: s, onTap: () {}),
               _Tile(
                 icon: isDark ? LucideIcons.sun : LucideIcons.moon,
-                iconBg: isDark ? AppColors.tertiarySoftDark : AppColors.tertiarySoft,
-                iconColor: isDark ? AppColors.tertiary : AppColors.tertiary,
+                iconBg: isDark ? AppColors.amberSoftDark : AppColors.amberSoft,
+                iconColor: AppColors.amber,
                 title: isDark ? 'Light Mode' : 'Dark Mode',
                 isDark: isDark, s: s,
                 onTap: () => Get.changeThemeMode(isDark ? ThemeMode.light : ThemeMode.dark),
@@ -75,7 +75,7 @@ class ProfileView extends StatelessWidget {
                   value: isDark,
                   onChanged: (v) => Get.changeThemeMode(v ? ThemeMode.dark : ThemeMode.light),
                   activeThumbColor: Colors.white,
-                  activeTrackColor: AppColors.primary,
+                  activeTrackColor: s.brand,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: s.border,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -85,22 +85,17 @@ class ProfileView extends StatelessWidget {
 
               _Label('Support', s),
               const SizedBox(height: AppSizes.sm),
-              _Tile(icon: LucideIcons.circle_question_mark, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Help Center', isDark: isDark, s: s, onTap: () {}),
-              _Tile(icon: LucideIcons.shield_check, iconBg: isDark ? AppColors.greenSoftDark : AppColors.greenSoft, iconColor: AppColors.green, title: 'Privacy Policy', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.circle_question_mark, iconBg: s.brandSoft, iconColor: s.brand, title: 'Help Center', isDark: isDark, s: s, onTap: () {}),
+              _Tile(icon: LucideIcons.shield_check, iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft, iconColor: isDark ? const Color(0xFF60A5FA) : AppColors.blue, title: 'Privacy Policy', isDark: isDark, s: s, onTap: () {}),
               const SizedBox(height: AppSizes.xl),
 
-              SizedBox(
-                width: double.infinity, height: AppSizes.buttonHeight,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.rose,
-                    side: BorderSide(color: AppColors.rose.withValues(alpha: 0.35)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.radiusLg)),
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(LucideIcons.log_out, size: 17),
-                  label: Text('Log Out', style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w700)),
-                ),
+              AppButton(
+                text: 'Log Out',
+                icon: LucideIcons.log_out,
+                variant: AppButtonVariant.dangerOutline,
+                size: AppButtonSize.lg,
+                fullWidth: true,
+                onPressed: () {},
               ),
             ])),
           ),
@@ -129,7 +124,7 @@ class _StatBand extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: AppSizes.md, horizontal: AppSizes.sm),
     decoration: BoxDecoration(color: s.surface, borderRadius: BorderRadius.circular(AppSizes.radiusLg), border: Border.all(color: s.border)),
     child: Column(children: [
-      Icon(icon, size: 18, color: AppColors.primary),
+      Icon(icon, size: 18, color: s.brand),
       const SizedBox(height: 5),
       Text(value, style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.2)),
       Text(label, style: GoogleFonts.manrope(fontSize: 10, color: s.secondary)),

@@ -64,7 +64,8 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.primary,
+      primary: AppColors.primaryDark,
+      onPrimary: Color(0xFF042017),
       secondary: AppColors.secondary,
       tertiary: AppColors.tertiary,
       surface: AppColors.surfaceDark,

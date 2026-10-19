@@ -36,8 +36,8 @@ class AppBottomNavBar extends StatelessWidget {
       padding: EdgeInsets.only(
         left: AppSizes.lg,
         right: AppSizes.lg,
-        top: AppSizes.md,
-        bottom: MediaQuery.of(context).padding.bottom + AppSizes.md,
+        top: AppSizes.sm,
+        bottom: MediaQuery.of(context).padding.bottom,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -49,7 +49,8 @@ class AppBottomNavBar extends StatelessWidget {
   Widget _item(int index, bool isDark) {
     final selected = index == currentIndex;
     final item = _items[index];
-    final inactiveColor = isDark ? AppColors.textSecondaryDark : AppColors.secondary;
+    final selectedColor = isDark ? AppColors.primaryDark : AppColors.primary;
+    final inactiveColor = isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight;
 
     return GestureDetector(
       onTap: () => onTap(index),
@@ -58,27 +59,31 @@ class AppBottomNavBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
+            duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
-            width: selected ? 44 : 40,
-            height: selected ? 44 : 40,
+            width: 48,
+            height: 32,
             decoration: BoxDecoration(
-              color: selected ? AppColors.primary : Colors.transparent,
-              shape: BoxShape.circle,
+              color: selected
+                  ? (isDark
+                      ? AppColors.primaryDark.withValues(alpha: 0.15)
+                      : AppColors.primarySoft)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               item.icon,
               size: 20,
-              color: selected ? Colors.white : inactiveColor,
+              color: selected ? selectedColor : inactiveColor,
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 3),
           AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 180),
             style: GoogleFonts.manrope(
-              fontSize: 10,
+              fontSize: 10.5,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? AppColors.primary : inactiveColor,
+              color: selected ? selectedColor : inactiveColor,
             ),
             child: Text(item.label),
           ),

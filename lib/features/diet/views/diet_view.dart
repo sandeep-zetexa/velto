@@ -8,12 +8,80 @@ import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/diet/controllers/diet_controller.dart';
+import 'package:velto/features/diet/models/meal_model.dart';
 
 class DietView extends StatelessWidget {
   const DietView({super.key});
 
   void _openLogMeal() {
     Get.toNamed(Routes.logMeal);
+  }
+
+  void _confirmDeleteLoggedMeal(BuildContext context, DietController controller, MealModel meal) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Remove Meal?',
+          style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+        ),
+        content: Text('Remove "${meal.title}" from today\'s tracked meals?'),
+        actions: [
+          AppButton.text(
+            text: 'Cancel',
+            size: AppButtonSize.sm,
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppButton.danger(
+            text: 'Remove',
+            size: AppButtonSize.sm,
+            onPressed: () {
+              Navigator.pop(ctx);
+              controller.removeMeal(meal.id);
+              Get.snackbar(
+                'Meal Removed',
+                'Removed "${meal.title}" from today\'s log',
+                snackPosition: SnackPosition.BOTTOM,
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 2),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _macroBadge(String label, String value, Color color, Color bg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            value,
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -36,149 +104,190 @@ class DietView extends StatelessWidget {
             sliver: Obx(
               () => SliverList(
                 delegate: SliverChildListDelegate([
-                  // Calorie Card
+                  // ── Unified Nutrition & Macros Tracking Card ────────
                   AppCard(
                     isDark: isDark,
-                    child: Row(
+                    padding: const EdgeInsets.all(AppSizes.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 96,
-                          height: 96,
-                          child: CustomPaint(
-                            painter: _ArcPainter(
-                              progress: controller.calorieProgress,
-                              color: AppColors.primary,
-                              trackColor: s.border,
+                        // Top Tier: Calories with Arc Progress
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 78,
+                              height: 78,
+                              child: CustomPaint(
+                                painter: _ArcPainter(
+                                  progress: controller.calorieProgress,
+                                  color: s.brand,
+                                  trackColor: s.border,
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '${controller.totalCalories}',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color: s.primary,
+                                          letterSpacing: -0.5,
+                                        ),
+                                      ),
+                                      Text(
+                                        'kcal',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w600,
+                                          color: s.secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
-                            child: Center(
+                            const SizedBox(width: AppSizes.md),
+                            Expanded(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Today\'s Calories',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: s.secondary,
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                        decoration: BoxDecoration(
+                                          color: controller.totalCalories <= controller.dailyCalorieGoal.value
+                                              ? s.brandSoft
+                                              : (isDark ? AppColors.roseSoftDark : AppColors.roseSoft),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              controller.totalCalories <= controller.dailyCalorieGoal.value
+                                                  ? LucideIcons.circle_check
+                                                  : LucideIcons.triangle_alert,
+                                              size: 11,
+                                              color: controller.totalCalories <= controller.dailyCalorieGoal.value
+                                                  ? s.brand
+                                                  : AppColors.rose,
+                                            ),
+                                            const SizedBox(width: 3.5),
+                                            Text(
+                                              controller.totalCalories <= controller.dailyCalorieGoal.value
+                                                  ? 'On track'
+                                                  : 'Goal exceeded',
+                                              style: GoogleFonts.manrope(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                                color: controller.totalCalories <= controller.dailyCalorieGoal.value
+                                                    ? s.brand
+                                                    : AppColors.rose,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    '${controller.totalCalories}',
+                                    '${controller.remainingCalories} remaining',
                                     style: GoogleFonts.manrope(
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w800,
                                       color: s.primary,
-                                      letterSpacing: -0.5,
+                                      letterSpacing: -0.3,
                                     ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    'kcal',
-                                    style: GoogleFonts.manrope(fontSize: 9, color: s.secondary),
+                                    'of ${controller.dailyCalorieGoal.value} kcal goal',
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: s.tertiary,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
+                          ],
+                        ),
+
+                        // Faint divider separating Calories & Macros
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: isDark
+                                ? AppColors.borderDark.withValues(alpha: 0.5)
+                                : AppColors.borderLight.withValues(alpha: 0.7),
                           ),
                         ),
-                        const SizedBox(width: AppSizes.lg),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Today\'s Calories',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: s.secondary,
-                                ),
+
+                        // Bottom Tier: 3 Associated Macro Wells
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MacroItem(
+                                name: 'Protein',
+                                current: controller.totalProtein,
+                                goal: controller.proteinGoal.value,
+                                unit: 'g',
+                                color: AppColors.macroProtein,
+                                iconBg: isDark ? AppColors.macroProteinSoftDark : AppColors.macroProteinSoft,
+                                icon: LucideIcons.beef,
+                                s: s,
+                                isDark: isDark,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${controller.remainingCalories} remaining',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: s.primary,
-                                  letterSpacing: -0.3,
-                                ),
+                            ),
+                            const SizedBox(width: AppSizes.xs),
+                            Expanded(
+                              child: _MacroItem(
+                                name: 'Carbs',
+                                current: controller.totalCarbs,
+                                goal: controller.carbsGoal.value,
+                                unit: 'g',
+                                color: AppColors.macroCarbs,
+                                iconBg: isDark ? AppColors.macroCarbsSoftDark : AppColors.macroCarsbSoft,
+                                icon: LucideIcons.wheat,
+                                s: s,
+                                isDark: isDark,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'of ${controller.dailyCalorieGoal.value} kcal',
-                                style: GoogleFonts.manrope(fontSize: 11, color: s.secondary),
+                            ),
+                            const SizedBox(width: AppSizes.xs),
+                            Expanded(
+                              child: _MacroItem(
+                                name: 'Fats',
+                                current: controller.totalFats,
+                                goal: controller.fatsGoal.value,
+                                unit: 'g',
+                                color: AppColors.macroFats,
+                                iconBg: isDark ? AppColors.macroFatsSoftDark : AppColors.macroFatsSoft,
+                                icon: LucideIcons.droplet,
+                                s: s,
+                                isDark: isDark,
                               ),
-                              const SizedBox(height: AppSizes.sm),
-                              Row(
-                                children: [
-                                  Icon(
-                                    controller.totalCalories <= controller.dailyCalorieGoal.value
-                                        ? LucideIcons.circle_check
-                                        : LucideIcons.triangle_alert,
-                                    size: 13,
-                                    color: controller.totalCalories <= controller.dailyCalorieGoal.value
-                                        ? AppColors.primary
-                                        : AppColors.rose,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    controller.totalCalories <= controller.dailyCalorieGoal.value
-                                        ? 'On track'
-                                        : 'Goal exceeded',
-                                    style: GoogleFonts.manrope(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: controller.totalCalories <= controller.dailyCalorieGoal.value
-                                          ? AppColors.primary
-                                          : AppColors.rose,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: AppSizes.md),
-
-                  // Macros Section
-                  AppSectionHeader(title: 'Macros', isDark: isDark),
-                  const SizedBox(height: AppSizes.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MacroCard(
-                          'Protein',
-                          controller.totalProtein,
-                          controller.proteinGoal.value,
-                          'g',
-                          AppColors.macroProtein,
-                          isDark ? AppColors.macroProteinSoftDark : AppColors.macroProteinSoft,
-                          LucideIcons.beef,
-                          s,
-                        ),
-                      ),
-                      const SizedBox(width: AppSizes.md),
-                      Expanded(
-                        child: _MacroCard(
-                          'Carbs',
-                          controller.totalCarbs,
-                          controller.carbsGoal.value,
-                          'g',
-                          AppColors.macroCarbs,
-                          isDark ? AppColors.macroCarbsSoftDark : AppColors.macroCarsbSoft,
-                          LucideIcons.wheat,
-                          s,
-                        ),
-                      ),
-                      const SizedBox(width: AppSizes.md),
-                      Expanded(
-                        child: _MacroCard(
-                          'Fats',
-                          controller.totalFats,
-                          controller.fatsGoal.value,
-                          'g',
-                          AppColors.macroFats,
-                          isDark ? AppColors.macroFatsSoftDark : AppColors.macroFatsSoft,
-                          LucideIcons.droplet,
-                          s,
-                        ),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: AppSizes.xl),
 
@@ -187,30 +296,11 @@ class DietView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       AppSectionHeader(title: 'Meals', isDark: isDark),
-                      GestureDetector(
-                        onTap: _openLogMeal,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(LucideIcons.plus, size: 13, color: AppColors.primary),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Log meal',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      AppButton.soft(
+                        text: 'Log meal',
+                        icon: LucideIcons.plus,
+                        size: AppButtonSize.xs,
+                        onPressed: _openLogMeal,
                       ),
                     ],
                   ),
@@ -233,7 +323,16 @@ class DietView extends StatelessWidget {
                         child: Dismissible(
                           key: Key(m.id),
                           direction: DismissDirection.endToStart,
-                          onDismissed: (_) => controller.removeMeal(m.id),
+                          onDismissed: (_) {
+                            controller.removeMeal(m.id);
+                            Get.snackbar(
+                              'Meal Removed',
+                              'Removed "${m.title}" from today\'s log',
+                              snackPosition: SnackPosition.BOTTOM,
+                              margin: const EdgeInsets.all(16),
+                              duration: const Duration(seconds: 2),
+                            );
+                          },
                           background: Container(
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.only(right: 20),
@@ -289,10 +388,37 @@ class DietView extends StatelessWidget {
                                       const SizedBox(height: 2),
                                       Text(
                                         m.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.manrope(
                                           fontSize: 11,
                                           color: s.secondary,
                                         ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Wrap(
+                                        spacing: 4,
+                                        runSpacing: 4,
+                                        children: [
+                                          _macroBadge(
+                                            'P',
+                                            '${m.protein}g',
+                                            AppColors.macroProtein,
+                                            isDark ? AppColors.macroProteinSoftDark : AppColors.macroProteinSoft,
+                                          ),
+                                          _macroBadge(
+                                            'C',
+                                            '${m.carbs}g',
+                                            AppColors.macroCarbs,
+                                            isDark ? AppColors.macroCarbsSoftDark : AppColors.macroCarbsSoft,
+                                          ),
+                                          _macroBadge(
+                                            'F',
+                                            '${m.fats}g',
+                                            AppColors.macroFats,
+                                            isDark ? AppColors.macroFatsSoftDark : AppColors.macroFatsSoft,
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -317,6 +443,15 @@ class DietView extends StatelessWidget {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(width: AppSizes.sm),
+                                AppButton.icon(
+                                  icon: LucideIcons.trash_2,
+                                  size: AppButtonSize.xs,
+                                  variant: AppButtonVariant.danger,
+                                  customBgColor: isDark ? AppColors.roseSoftDark : AppColors.roseSoft,
+                                  customTextColor: AppColors.rose,
+                                  onPressed: () => _confirmDeleteLoggedMeal(context, controller, m),
+                                ),
                               ],
                             ),
                           ),
@@ -333,70 +468,106 @@ class DietView extends StatelessWidget {
   }
 }
 
-class _MacroCard extends StatelessWidget {
+class _MacroItem extends StatelessWidget {
   final String name, unit;
   final int current, goal;
   final Color color;
   final Color iconBg;
   final IconData icon;
   final AppStyle s;
+  final bool isDark;
 
-  const _MacroCard(
-    this.name,
-    this.current,
-    this.goal,
-    this.unit,
-    this.color,
-    this.iconBg,
-    this.icon,
-    this.s,
-  );
+  const _MacroItem({
+    required this.name,
+    required this.current,
+    required this.goal,
+    required this.unit,
+    required this.color,
+    required this.iconBg,
+    required this.icon,
+    required this.s,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
     final progress = goal > 0 ? (current / goal).clamp(0.0, 1.0) : 0.0;
 
     return Container(
-      padding: const EdgeInsets.all(AppSizes.md),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: s.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        border: Border.all(color: s.border),
+        color: isDark ? AppColors.surfaceDark2 : AppColors.secondarySoft.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 15, color: color),
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Icon(icon, size: 11, color: color),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: s.secondary,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            name,
-            style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w600, color: s.secondary),
+          const SizedBox(height: 5),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '$current',
+                style: GoogleFonts.manrope(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: s.primary,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              Text(
+                unit,
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: s.secondary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$goal$unit',
+                style: GoogleFonts.manrope(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w600,
+                  color: s.tertiary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            '$current$unit',
-            style: GoogleFonts.manrope(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-              color: s.primary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          Text(
-            '/ $goal$unit',
-            style: GoogleFonts.manrope(fontSize: 10, color: s.tertiary),
-          ),
-          const SizedBox(height: AppSizes.sm),
+          const SizedBox(height: 4),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 4,
+              minHeight: 3.5,
               backgroundColor: color.withValues(alpha: 0.12),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
@@ -416,8 +587,8 @@ class _ArcPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final c = Offset(size.width / 2, size.height / 2);
-    final r = size.width / 2 - 8;
-    const sw = 7.0;
+    final r = size.width / 2 - 6;
+    const sw = 6.0;
 
     canvas.drawCircle(
       c,
