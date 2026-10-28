@@ -10,7 +10,6 @@ class AddRoutineController extends GetxController {
   final WorkoutService _workoutService = WorkoutService();
 
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
 
   final RxInt selectedDayIndex = 0.obs;
   final RxList<RoutineDay> days = <RoutineDay>[].obs;
@@ -42,7 +41,6 @@ class AddRoutineController extends GetxController {
     if (args is WorkoutRoutine) {
       editingRoutine = args;
       nameController.text = args.name;
-      descriptionController.text = args.description;
       days.assignAll(args.days.map((d) => d.copyWith()).toList());
     } else {
       // Start with clean, unconfigured days - user selects muscles and exercises
@@ -70,7 +68,6 @@ class AddRoutineController extends GetxController {
   @override
   void onClose() {
     nameController.dispose();
-    descriptionController.dispose();
     super.onClose();
   }
 
@@ -327,9 +324,6 @@ class AddRoutineController extends GetxController {
     final routine = WorkoutRoutine(
       id: id,
       name: name,
-      description: descriptionController.text.trim().isEmpty
-          ? '${days.where((d) => !d.isRestDay).length}-day custom training routine'
-          : descriptionController.text.trim(),
       days: days.toList(),
       isActive: setActive ? true : (editingRoutine?.isActive ?? false),
       isCustom: true,

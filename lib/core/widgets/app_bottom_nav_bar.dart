@@ -34,8 +34,8 @@ class AppBottomNavBar extends StatelessWidget {
         border: Border(top: BorderSide(color: border, width: 1)),
       ),
       padding: EdgeInsets.only(
-        left: AppSizes.lg,
-        right: AppSizes.lg,
+        left: AppSizes.screenPadding,
+        right: AppSizes.screenPadding,
         top: AppSizes.sm,
         bottom: MediaQuery.of(context).padding.bottom,
       ),

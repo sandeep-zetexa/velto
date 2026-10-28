@@ -92,7 +92,7 @@ class AddMealView extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.lg),
+              padding: const EdgeInsets.all(AppSizes.screenPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -529,9 +529,9 @@ class AddMealView extends StatelessWidget {
           // Bottom Action Bar
           Container(
             padding: EdgeInsets.fromLTRB(
-              AppSizes.lg,
+              AppSizes.screenPadding,
               AppSizes.md,
-              AppSizes.lg,
+              AppSizes.screenPadding,
               MediaQuery.of(context).padding.bottom + AppSizes.md,
             ),
             decoration: BoxDecoration(

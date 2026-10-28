@@ -155,7 +155,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg, vertical: AppSizes.xs),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding, vertical: AppSizes.xs),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -203,7 +203,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
       children: [
         // Search bar
         Padding(
-          padding: const EdgeInsets.fromLTRB(AppSizes.lg, AppSizes.md, AppSizes.lg, AppSizes.sm),
+          padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.md, AppSizes.screenPadding, AppSizes.sm),
           child: AppSearchBar(
             hintText: 'Search bench press, squat, pull-ups...',
             isDark: isDark,
@@ -216,7 +216,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
           height: 38,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding),
             itemCount: WorkoutService.muscleGroups.length,
             itemBuilder: (context, index) {
               final muscle = WorkoutService.muscleGroups[index];
@@ -278,7 +278,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                       ),
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.all(AppSizes.lg),
+                      padding: const EdgeInsets.all(AppSizes.screenPadding),
                       itemCount: _exercises.length,
                       separatorBuilder: (_, _) => const SizedBox(height: AppSizes.sm),
                       itemBuilder: (context, index) {
@@ -369,7 +369,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     final ex = _configuringExercise!;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSizes.lg),
+      padding: const EdgeInsets.all(AppSizes.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

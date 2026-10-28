@@ -30,7 +30,7 @@ class DashboardView extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(AppSizes.lg, AppSizes.sm, AppSizes.lg, 120),
+            padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.sm, AppSizes.screenPadding, 120),
             sliver: SliverList(delegate: SliverChildListDelegate([
 
               // ── Progress Banner ───────────────────────────────────────

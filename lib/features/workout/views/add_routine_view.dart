@@ -44,7 +44,7 @@ class AddRoutineView extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.lg),
+              padding: const EdgeInsets.all(AppSizes.screenPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -67,26 +67,6 @@ class AddRoutineView extends StatelessWidget {
                             hintStyle: GoogleFonts.manrope(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: s.tertiary,
-                            ),
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                            border: InputBorder.none,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Divider(color: s.border, height: 1),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: controller.descriptionController,
-                          style: GoogleFonts.manrope(
-                            fontSize: 13,
-                            color: s.secondary,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Short description (e.g. Mon: Chest+Tri, Tue: Back+Bi, Wed: Legs)',
-                            hintStyle: GoogleFonts.manrope(
-                              fontSize: 12,
                               color: s.tertiary,
                             ),
                             isDense: true,
@@ -696,9 +676,9 @@ class AddRoutineView extends StatelessWidget {
           // Bottom Action Bar
           Container(
             padding: EdgeInsets.fromLTRB(
-              AppSizes.lg,
+              AppSizes.screenPadding,
               AppSizes.md,
-              AppSizes.lg,
+              AppSizes.screenPadding,
               MediaQuery.of(context).padding.bottom + AppSizes.md,
             ),
             decoration: BoxDecoration(

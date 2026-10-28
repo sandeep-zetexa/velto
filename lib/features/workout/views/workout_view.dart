@@ -10,6 +10,7 @@ import 'package:velto/features/workout/controllers/workout_controller.dart';
 import 'package:velto/features/workout/models/exercise.dart';
 import 'package:velto/features/workout/models/workout_routine.dart';
 import 'package:velto/features/workout/widgets/exercise_picker_sheet.dart';
+import 'package:velto/features/workout/widgets/exercise_svg_icon.dart';
 import 'package:velto/features/workout/widgets/routine_selector_sheet.dart';
 
 class WorkoutView extends StatelessWidget {
@@ -31,11 +32,11 @@ class WorkoutView extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(AppSizes.lg, AppSizes.sm, AppSizes.lg, 120),
+            padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.sm, AppSizes.screenPadding, 120),
             sliver: Obx(() {
               final activeRoutine = controller.activeRoutine.value;
 
-              if (controller.isLoading.value) {
+              if (controller.isLoading.value && controller.allRoutines.isEmpty) {
                 return const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
                 );
@@ -49,9 +50,9 @@ class WorkoutView extends StatelessWidget {
                       isDark: isDark,
                       icon: LucideIcons.dumbbell,
                       title: 'No Workout Routine Active',
-                      subtitle: 'Choose from preset routines like Push-Pull-Legs,\nor build your custom weekly split.',
-                      actionLabel: 'Select or Create Routine',
-                      onAction: () => RoutineSelectorSheet.show(context, controller),
+                      subtitle: 'You haven\'t set up a workout routine yet.\nTap below to build your custom weekly split.',
+                      actionLabel: 'Create Routine',
+                      onAction: () => Get.toNamed(Routes.addRoutine),
                     ),
                   ]),
                 );
@@ -96,7 +97,7 @@ class WorkoutView extends StatelessWidget {
                                   Row(
                                     children: [
                                       Text(
-                                        activeRoutine.name,
+                                        controller.effectiveRoutineName,
                                         style: GoogleFonts.manrope(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w800,
@@ -587,13 +588,13 @@ class WorkoutView extends StatelessWidget {
                                               : s.brandSoft,
                                           borderRadius: BorderRadius.circular(10),
                                         ),
-                                        child: Icon(
-                                          isAllDone
-                                              ? LucideIcons.check
-                                              : _exerciseIcon(item.exercise.targetMuscle),
-                                          size: 18,
-                                          color: isAllDone ? AppColors.green : s.brand,
-                                        ),
+                                        child: isAllDone
+                                            ? const Icon(LucideIcons.check, size: 18, color: AppColors.green)
+                                            : ExerciseSvgIcon(
+                                                exercise: item.exercise,
+                                                size: 18,
+                                                color: s.brand,
+                                              ),
                                       ),
                                       const SizedBox(width: AppSizes.md),
                                       Expanded(
@@ -679,77 +680,32 @@ class WorkoutView extends StatelessWidget {
                                     secondChild: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const SizedBox(height: AppSizes.md),
+                                        const SizedBox(height: AppSizes.sm + 2),
                                         Divider(height: 1, color: s.border.withValues(alpha: 0.6)),
                                         const SizedBox(height: AppSizes.sm),
 
-                                // Interactive Quick Increment Controls: Weight, Reps, Sets
-                                Container(
-                                  padding: const EdgeInsets.all(AppSizes.sm),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? AppColors.surfaceDark2 : AppColors.bgLight,
-                                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                                    border: Border.all(color: s.border),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                    children: [
-                                      // Weight Stepper
-                                      _inlineStepper(
-                                        label: 'WEIGHT',
-                                        value: '${item.targetWeight > 0 ? item.targetWeight.toStringAsFixed(1) : "BW"} ${item.targetWeight > 0 ? "kg" : ""}',
-                                        onMinus: () => controller.decreaseWeight(item),
-                                        onPlus: () => controller.increaseWeight(item),
-                                        s: s,
-                                        isDark: isDark,
-                                      ),
-                                      Container(height: 28, width: 1, color: s.border),
-                                      // Reps Stepper
-                                      _inlineStepper(
-                                        label: 'REPS',
-                                        value: '${item.targetReps} reps',
-                                        onMinus: () => controller.decreaseReps(item),
-                                        onPlus: () => controller.increaseReps(item),
-                                        s: s,
-                                        isDark: isDark,
-                                      ),
-                                      Container(height: 28, width: 1, color: s.border),
-                                      // Sets Stepper
-                                      _inlineStepper(
-                                        label: 'SETS',
-                                        value: '${item.targetSets} sets',
-                                        onMinus: () => controller.decreaseSets(item),
-                                        onPlus: () => controller.increaseSets(item),
-                                        s: s,
-                                        isDark: isDark,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const SizedBox(height: AppSizes.sm),
-
-                                // Sets Section: Individual reps & weight for every set
-                                Column(
-                                  children: [
-                                    // Column headers
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 48,
-                                            child: Text(
-                                              'SET',
-                                              style: GoogleFonts.manrope(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w700,
-                                                color: s.tertiary,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
+                                        // Sets Section: Individual reps & weight for every set
+                                        Column(
+                                          children: [
+                                            // Column headers
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                              child: Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: 48,
+                                                    child: Text(
+                                                      'SETS',
+                                                      style: GoogleFonts.manrope(
+                                                        fontSize: 9,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: s.tertiary,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Expanded(
                                             flex: 4,
                                             child: Center(
                                               child: Text(
@@ -860,14 +816,15 @@ class WorkoutView extends StatelessWidget {
 
                                             // Completion Toggle Checkbox
                                             GestureDetector(
+                                              behavior: HitTestBehavior.opaque,
                                               onTap: () => controller.toggleSetCompletion(item, setIdx),
                                               child: AnimatedContainer(
                                                 duration: const Duration(milliseconds: 150),
-                                                width: 28,
-                                                height: 28,
+                                                width: 32,
+                                                height: 32,
                                                 decoration: BoxDecoration(
                                                   color: isDone ? AppColors.green : (isDark ? AppColors.surfaceDark : Colors.white),
-                                                  borderRadius: BorderRadius.circular(6),
+                                                  borderRadius: BorderRadius.circular(7),
                                                   border: Border.all(
                                                     color: isDone ? AppColors.green : s.border,
                                                     width: 1.5,
@@ -875,7 +832,7 @@ class WorkoutView extends StatelessWidget {
                                                 ),
                                                 alignment: Alignment.center,
                                                 child: isDone
-                                                    ? const Icon(LucideIcons.check, size: 14, color: Colors.white)
+                                                    ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
                                                     : null,
                                               ),
                                             ),
@@ -968,68 +925,6 @@ class WorkoutView extends StatelessWidget {
     );
   }
 
-  Widget _inlineStepper({
-    required String label,
-    required String value,
-    required VoidCallback onMinus,
-    required VoidCallback onPlus,
-    required AppStyle s,
-    required bool isDark,
-  }) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.manrope(
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            color: s.tertiary,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: onMinus,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(LucideIcons.minus, size: 12, color: s.primary),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                value,
-                style: GoogleFonts.manrope(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: s.primary,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: onPlus,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(LucideIcons.plus, size: 12, color: s.primary),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _setStepper({
     required String value,
     required VoidCallback onMinus,
@@ -1038,47 +933,54 @@ class WorkoutView extends StatelessWidget {
     required bool isDark,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      height: 34,
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: s.border.withValues(alpha: 0.6)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: onMinus,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.surfaceDark2 : AppColors.secondarySoft,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(LucideIcons.minus, size: 10, color: s.primary),
+              child: Icon(LucideIcons.minus, size: 13, color: s.primary),
             ),
           ),
-          Flexible(
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.manrope(
-                fontSize: 10,
+                fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 color: s.primary,
               ),
             ),
           ),
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: onPlus,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.surfaceDark2 : AppColors.secondarySoft,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(LucideIcons.plus, size: 10, color: s.primary),
+              child: Icon(LucideIcons.plus, size: 13, color: s.primary),
             ),
           ),
         ],
@@ -1086,27 +988,6 @@ class WorkoutView extends StatelessWidget {
     );
   }
 
-  IconData _exerciseIcon(String muscle) {
-    switch (muscle.toLowerCase()) {
-      case 'chest':
-        return LucideIcons.shield;
-      case 'back':
-        return LucideIcons.layers;
-      case 'shoulders':
-        return LucideIcons.triangle;
-      case 'biceps':
-      case 'triceps':
-        return LucideIcons.dumbbell;
-      case 'legs':
-        return LucideIcons.footprints;
-      case 'abs':
-        return LucideIcons.activity;
-      case 'cardio':
-        return LucideIcons.zap;
-      default:
-        return LucideIcons.dumbbell;
-    }
-  }
 
   Widget _badge(String text, Color color, Color bg) {
     return Container(

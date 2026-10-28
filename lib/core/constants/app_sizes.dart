@@ -9,6 +9,10 @@ class AppSizes {
   static const double xl = 32.0;
   static const double xxl = 48.0;
 
+  // Standard Screen / Page Padding
+  static const double screenPadding = 16.0;
+  static const double screenMargin = 16.0;
+
   // Border Radius
   static const double radiusSm = 8.0;
   static const double radiusMd = 12.0;

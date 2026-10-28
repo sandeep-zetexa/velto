@@ -9,6 +9,18 @@ class Exercise {
   final int defaultReps;
   final double defaultWeight;
   final String? instructions;
+  final String? svg;
+
+  static const String defaultPlaceholderSvg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+      '<path d="m6.5 6.5 11 11"/>'
+      '<path d="m21 21-1-1"/>'
+      '<path d="m3 3 1 1"/>'
+      '<path d="m18 22 4-4"/>'
+      '<path d="m2 6 4-4"/>'
+      '<path d="m3 10 7-7"/>'
+      '<path d="m14 21 7-7"/>'
+      '</svg>';
 
   const Exercise({
     required this.id,
@@ -21,7 +33,35 @@ class Exercise {
     this.defaultReps = 10,
     this.defaultWeight = 20.0,
     this.instructions,
+    this.svg,
   });
+
+  Exercise copyWith({
+    String? id,
+    String? name,
+    String? targetMuscle,
+    List<String>? secondaryMuscles,
+    String? category,
+    String? equipment,
+    int? defaultSets,
+    int? defaultReps,
+    double? defaultWeight,
+    String? instructions,
+    String? svg,
+  }) =>
+      Exercise(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        targetMuscle: targetMuscle ?? this.targetMuscle,
+        secondaryMuscles: secondaryMuscles ?? this.secondaryMuscles,
+        category: category ?? this.category,
+        equipment: equipment ?? this.equipment,
+        defaultSets: defaultSets ?? this.defaultSets,
+        defaultReps: defaultReps ?? this.defaultReps,
+        defaultWeight: defaultWeight ?? this.defaultWeight,
+        instructions: instructions ?? this.instructions,
+        svg: svg ?? this.svg,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -34,6 +74,7 @@ class Exercise {
         'defaultReps': defaultReps,
         'defaultWeight': defaultWeight,
         'instructions': instructions,
+        'svg': svg ?? defaultPlaceholderSvg,
       };
 
   factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
@@ -50,6 +91,7 @@ class Exercise {
         defaultReps: json['defaultReps'] as int? ?? 10,
         defaultWeight: (json['defaultWeight'] as num?)?.toDouble() ?? 20.0,
         instructions: json['instructions'] as String?,
+        svg: json['svg'] as String? ?? defaultPlaceholderSvg,
       );
 }
 
@@ -172,6 +214,17 @@ class WorkoutExerciseItem {
         'notes': notes,
       };
 
+  /// Minimal storage representation saving only exerciseId reference and set configurations.
+  Map<String, dynamic> toMinimalJson() => {
+        'id': id,
+        'exerciseId': exercise.id,
+        'targetSets': targetSets,
+        'targetReps': targetReps,
+        'targetWeight': targetWeight,
+        'sets': sets.map((s) => s.toJson()).toList(),
+        'notes': notes,
+      };
+
   factory WorkoutExerciseItem.fromJson(Map<String, dynamic> json) =>
       WorkoutExerciseItem(
         id: json['id'] as String,
@@ -179,6 +232,23 @@ class WorkoutExerciseItem {
         targetSets: json['targetSets'] as int? ?? 3,
         targetReps: json['targetReps'] as int? ?? 10,
         targetWeight: (json['targetWeight'] as num?)?.toDouble() ?? 20.0,
+        sets: (json['sets'] as List<dynamic>?)
+                ?.map((s) => ExerciseSet.fromJson(s as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        notes: json['notes'] as String?,
+      );
+
+  factory WorkoutExerciseItem.fromMinimalJson(
+    Map<String, dynamic> json,
+    Exercise resolvedExercise,
+  ) =>
+      WorkoutExerciseItem(
+        id: json['id'] as String,
+        exercise: resolvedExercise,
+        targetSets: json['targetSets'] as int? ?? resolvedExercise.defaultSets,
+        targetReps: json['targetReps'] as int? ?? resolvedExercise.defaultReps,
+        targetWeight: (json['targetWeight'] as num?)?.toDouble() ?? resolvedExercise.defaultWeight,
         sets: (json['sets'] as List<dynamic>?)
                 ?.map((s) => ExerciseSet.fromJson(s as Map<String, dynamic>))
                 .toList() ??

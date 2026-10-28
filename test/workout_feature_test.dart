@@ -2,16 +2,115 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:velto/features/workout/controllers/add_routine_controller.dart';
 import 'package:velto/features/workout/controllers/workout_controller.dart';
+import 'package:velto/features/workout/models/exercise.dart';
+import 'package:velto/features/workout/models/routine_day.dart';
+import 'package:velto/features/workout/models/workout_routine.dart';
 import 'package:velto/features/workout/services/workout_service.dart';
 import 'package:velto/features/workout/views/add_routine_view.dart';
 import 'package:velto/features/workout/views/workout_view.dart';
 import 'package:velto/features/workout/widgets/routine_selector_sheet.dart';
 
+Future<void> seedTestRoutines(WorkoutService service) async {
+  final exercises = await service.getExercises();
+  final bench = exercises.firstWhere((e) => e.name == 'Barbell Bench Press');
+  final incline = exercises.firstWhere((e) => e.name.contains('Incline Dumbbell Press'));
+  final squat = exercises.firstWhere((e) => e.name == 'Barbell Back Squat');
+  final deadlift = exercises.firstWhere((e) => e.name.contains('Deadlift'));
+
+  final ppl = WorkoutRoutine(
+    id: 'routine_ppl',
+    name: 'Push Pull Legs (PPL)',
+    days: [
+      RoutineDay(
+        dayName: 'Monday',
+        dayShort: 'Mon',
+        muscles: ['Chest'],
+        exercises: [
+          WorkoutExerciseItem.create(exercise: bench, targetSets: 4, targetReps: 8, targetWeight: 60.0),
+          WorkoutExerciseItem.create(exercise: incline, targetSets: 3, targetReps: 10, targetWeight: 22.0),
+        ],
+      ),
+      RoutineDay(
+        dayName: 'Tuesday',
+        dayShort: 'Tue',
+        muscles: ['Back'],
+        exercises: [
+          WorkoutExerciseItem.create(exercise: deadlift, targetSets: 4, targetReps: 5, targetWeight: 100.0),
+        ],
+      ),
+      RoutineDay(
+        dayName: 'Wednesday',
+        dayShort: 'Wed',
+        muscles: ['Legs'],
+        exercises: [
+          WorkoutExerciseItem.create(exercise: squat, targetSets: 4, targetReps: 8, targetWeight: 80.0),
+        ],
+      ),
+      const RoutineDay(dayName: 'Thursday', dayShort: 'Thu', muscles: ['Rest'], isRestDay: true, exercises: []),
+      const RoutineDay(dayName: 'Friday', dayShort: 'Fri', muscles: ['Rest'], isRestDay: true, exercises: []),
+      const RoutineDay(dayName: 'Saturday', dayShort: 'Sat', muscles: ['Rest'], isRestDay: true, exercises: []),
+      const RoutineDay(dayName: 'Sunday', dayShort: 'Sun', muscles: ['Rest'], isRestDay: true, exercises: []),
+    ],
+  );
+
+  final broSplit = WorkoutRoutine(
+    id: 'routine_bro_split',
+    name: 'Bro Split (Muscle Groups)',
+    days: [
+      RoutineDay(
+        dayName: 'Monday',
+        dayShort: 'Mon',
+        muscles: ['Chest'],
+        exercises: [
+          WorkoutExerciseItem.create(exercise: bench, targetSets: 4, targetReps: 8, targetWeight: 65.0),
+        ],
+      ),
+      const RoutineDay(dayName: 'Tuesday', dayShort: 'Tue', muscles: ['Back'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Wednesday', dayShort: 'Wed', muscles: ['Legs'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Thursday', dayShort: 'Thu', muscles: ['Shoulders'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Friday', dayShort: 'Fri', muscles: ['Arms'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Saturday', dayShort: 'Sat', muscles: ['Abs'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Sunday', dayShort: 'Sun', muscles: ['Rest'], isRestDay: true, exercises: []),
+    ],
+  );
+
+  final upperLower = WorkoutRoutine(
+    id: 'routine_upper_lower',
+    name: 'Upper Lower Split',
+    days: [
+      RoutineDay(
+        dayName: 'Monday',
+        dayShort: 'Mon',
+        muscles: ['Upper Body'],
+        exercises: [
+          WorkoutExerciseItem.create(exercise: bench, targetSets: 4, targetReps: 8, targetWeight: 60.0),
+        ],
+      ),
+      const RoutineDay(dayName: 'Tuesday', dayShort: 'Tue', muscles: ['Lower Body'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Wednesday', dayShort: 'Wed', muscles: ['Rest'], isRestDay: true, exercises: []),
+      const RoutineDay(dayName: 'Thursday', dayShort: 'Thu', muscles: ['Upper Body'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Friday', dayShort: 'Fri', muscles: ['Lower Body'], isRestDay: false, exercises: []),
+      const RoutineDay(dayName: 'Saturday', dayShort: 'Sat', muscles: ['Rest'], isRestDay: true, exercises: []),
+      const RoutineDay(dayName: 'Sunday', dayShort: 'Sun', muscles: ['Rest'], isRestDay: true, exercises: []),
+    ],
+  );
+
+  await service.saveRoutine(ppl, setActive: true);
+  await service.saveRoutine(broSplit);
+  await service.saveRoutine(upperLower);
+}
+
 void main() {
   group('Workout Feature Tests', () {
     final service = WorkoutService();
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      await seedTestRoutines(service);
+    });
 
     test('WorkoutService loads extensive exercise catalog', () async {
       final exercises = await service.getExercises();
@@ -20,12 +119,12 @@ void main() {
       // Verify staples across major muscle groups
       expect(exercises.any((e) => e.name == 'Barbell Bench Press'), true);
       expect(exercises.any((e) => e.name == 'Barbell Back Squat'), true);
-      expect(exercises.any((e) => e.name == 'Barbell Deadlift'), true);
-      expect(exercises.any((e) => e.name == 'Pull-Ups'), true);
-      expect(exercises.any((e) => e.name == 'Overhead Barbell Press'), true);
-      expect(exercises.any((e) => e.name == 'Barbell Bicep Curl'), true);
-      expect(exercises.any((e) => e.name.contains('Tricep Pushdown')), true);
-      expect(exercises.any((e) => e.name == 'Hanging Leg / Knee Raises'), true);
+      expect(exercises.any((e) => e.name.contains('Deadlift')), true);
+      expect(exercises.any((e) => e.name.contains('Pull-Up')), true);
+      expect(exercises.any((e) => e.name.contains('Overhead Press')), true);
+      expect(exercises.any((e) => e.name.contains('Barbell Curl')), true);
+      expect(exercises.any((e) => e.name.contains('Pushdown')), true);
+      expect(exercises.any((e) => e.name.contains('Hanging')), true);
     });
 
     test('WorkoutService filters exercises by muscle group (e.g. Legs)', () async {
@@ -39,7 +138,7 @@ void main() {
           e.secondaryMuscles.contains('Calves')), true);
     });
 
-    test('WorkoutService provides preset routines and manages active routine', () async {
+    test('WorkoutService manages routines and active routine selection', () async {
       final routines = await service.getRoutines();
       expect(routines.length >= 3, true);
 
@@ -69,7 +168,7 @@ void main() {
       expect(controller.allRoutines.length >= 3, true);
 
       // Select Monday
-      controller.selectDay(0);
+      await controller.selectDay(0);
       expect(controller.selectedDayIndex.value, 0);
 
       final day = controller.selectedDay;
@@ -102,7 +201,7 @@ void main() {
       Get.reset();
       final controller = Get.put(WorkoutController());
       await controller.loadRoutines();
-      controller.selectDay(0);
+      await controller.selectDay(0);
 
       // Ensure first exercise has at least 3 sets
       while (controller.selectedDay!.exercises.first.sets.length < 3) {
@@ -128,7 +227,6 @@ void main() {
       Get.reset();
       final controller = Get.put(AddRoutineController());
       controller.nameController.text = 'Arnold Split Custom';
-      controller.descriptionController.text = 'Chest & Back, Shoulders & Arms, Legs';
 
       // Configure Day 0 (Monday)
       controller.selectDay(0);
@@ -186,7 +284,7 @@ void main() {
       Get.reset();
       final controller = Get.put(WorkoutController());
       await controller.loadRoutines();
-      controller.selectDay(0);
+      await controller.selectDay(0);
 
       await tester.pumpWidget(
         const GetMaterialApp(

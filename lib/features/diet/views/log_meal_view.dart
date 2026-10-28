@@ -74,7 +74,7 @@ class LogMealView extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(AppSizes.lg, AppSizes.sm, AppSizes.lg, 0),
+              padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.sm, AppSizes.screenPadding, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -290,7 +290,7 @@ class LogMealView extends StatelessWidget {
             }
 
             return SliverPadding(
-              padding: const EdgeInsets.fromLTRB(AppSizes.lg, 0, AppSizes.lg, AppSizes.xxl),
+              padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, 0, AppSizes.screenPadding, AppSizes.xxl),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {

@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
+import 'package:velto/core/services/local_storage_service.dart';
+import 'package:velto/features/diet/models/daily_diet_log.dart';
 import 'package:velto/features/diet/models/ingredient.dart';
 import 'package:velto/features/diet/models/saved_meal.dart';
 
@@ -7,20 +10,37 @@ class DietService {
   static final DietService _instance = DietService._internal();
   factory DietService() => _instance;
 
+  final LocalStorageService _storage = LocalStorageService();
+
   // In-memory cache loaded initially from static JSON, allowing new additions during session.
   List<Ingredient>? _cachedIngredients;
+  Map<String, Ingredient> _ingredientMap = {};
   List<SavedMeal>? _cachedSavedMeals;
+
+  Map<String, Ingredient> get ingredientMap => _ingredientMap;
+
+  Future<void> _simulateLatency(int ms) async {
+    if (!WidgetsBinding.instance.runtimeType.toString().contains('Test')) {
+      await Future.delayed(Duration(milliseconds: ms));
+    }
+  }
+
+  /// Simulates fetching ingredients catalog from API
+  Future<List<Ingredient>> fetchIngredientsApi() async {
+    return getIngredients();
+  }
 
   /// Fetch ingredients catalog from static JSON data with optional search and category filters.
   Future<List<Ingredient>> getIngredients({String? query, String? category}) async {
     // Simulate slight network latency
-    await Future.delayed(const Duration(milliseconds: 200));
+    await _simulateLatency(200);
 
     if (_cachedIngredients == null) {
       final decoded = jsonDecode(_staticIngredientsJson) as List<dynamic>;
       _cachedIngredients = decoded
           .map((item) => Ingredient.fromJson(item as Map<String, dynamic>))
           .toList();
+      _ingredientMap = {for (final i in _cachedIngredients!) i.id: i};
     }
 
     var list = _cachedIngredients!;
@@ -47,13 +67,19 @@ class DietService {
   /// Fetch saved meals list from static JSON data with optional search and category filters.
   Future<List<SavedMeal>> getSavedMeals({String? query, String? category}) async {
     // Simulate slight network latency
-    await Future.delayed(const Duration(milliseconds: 200));
+    await _simulateLatency(200);
+
+    if (_cachedIngredients == null) {
+      await getIngredients();
+    }
 
     if (_cachedSavedMeals == null) {
-      final decoded = jsonDecode(_staticSavedMealsJson) as List<dynamic>;
-      _cachedSavedMeals = decoded
-          .map((item) => SavedMeal.fromJson(item as Map<String, dynamic>))
+      final storedCustom = await _storage.getCustomSavedMealsMinimal();
+      final customMeals = storedCustom
+          .map((json) => SavedMeal.fromMinimalJson(json, _ingredientMap))
           .toList();
+
+      _cachedSavedMeals = customMeals;
     }
 
     var list = _cachedSavedMeals!;
@@ -79,9 +105,9 @@ class DietService {
     return List.from(list);
   }
 
-  /// Save a newly created custom meal.
+  /// Save a newly created custom meal with minimal storage footprint.
   Future<SavedMeal> saveMeal(SavedMeal meal) async {
-    await Future.delayed(const Duration(milliseconds: 250));
+    await _simulateLatency(250);
 
     if (_cachedSavedMeals == null) {
       await getSavedMeals();
@@ -89,12 +115,19 @@ class DietService {
 
     // Insert at beginning of list
     _cachedSavedMeals!.insert(0, meal);
+
+    // Persist custom meals minimal JSON to device
+    final customMinimal = _cachedSavedMeals!
+        .map((m) => m.toMinimalJson())
+        .toList();
+    await _storage.saveCustomSavedMealsMinimal(customMinimal);
+
     return meal;
   }
 
   /// Update an existing saved meal.
   Future<SavedMeal> updateMeal(SavedMeal updatedMeal) async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    await _simulateLatency(200);
 
     if (_cachedSavedMeals == null) {
       await getSavedMeals();
@@ -106,16 +139,46 @@ class DietService {
     } else {
       _cachedSavedMeals!.insert(0, updatedMeal);
     }
+
+    final customMinimal = _cachedSavedMeals!
+        .map((m) => m.toMinimalJson())
+        .toList();
+    await _storage.saveCustomSavedMealsMinimal(customMinimal);
+
     return updatedMeal;
   }
 
   /// Delete a saved meal by id.
   Future<bool> deleteMeal(String mealId) async {
-    await Future.delayed(const Duration(milliseconds: 150));
+    await _simulateLatency(150);
     if (_cachedSavedMeals == null) return false;
     final prevLength = _cachedSavedMeals!.length;
     _cachedSavedMeals!.removeWhere((m) => m.id == mealId);
+
+    final customMinimal = _cachedSavedMeals!
+        .map((m) => m.toMinimalJson())
+        .toList();
+    await _storage.saveCustomSavedMealsMinimal(customMinimal);
+
     return _cachedSavedMeals!.length < prevLength;
+  }
+
+  // ── Daily Diet Progress Logs (Date-Keyed History & Macros) ────────────────
+
+  /// Retrieve the tracked meals, calories, and macros for a specific calendar date ("yyyy-MM-dd").
+  Future<DailyDietLog> getDailyLog(String dateKey) async {
+    final raw = await _storage.getDietDailyLog(dateKey);
+    if (raw != null) {
+      try {
+        return DailyDietLog.fromJson(raw);
+      } catch (_) {}
+    }
+    return DailyDietLog(date: dateKey);
+  }
+
+  /// Save daily tracked meals, calories, and macros for a calendar date.
+  Future<void> saveDailyLog(DailyDietLog log) async {
+    await _storage.saveDietDailyLog(log.date, log.toJson());
   }
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -1823,280 +1886,4 @@ class DietService {
 ]
 ''';
 
-  static const String _staticSavedMealsJson = '''
-[
-  {
-    "id": "meal_tea_01",
-    "name": "Masala Tea",
-    "category": "Snack",
-    "servings": 1,
-    "items": [
-      {
-        "ingredient": {
-          "id": "ing_toned_milk",
-          "name": "Toned Milk (3% Fat)",
-          "brand": "Amul Taaza",
-          "category": "Dairy",
-          "nutritionPer": {"amount": 100.0, "unit": "ml"},
-          "macros": {
-            "calories": 58.0,
-            "protein": 3.1,
-            "carbs": 4.7,
-            "fat": 3.0,
-            "fiber": 0.0,
-            "sugar": 4.7
-          },
-          "micros": {"sodium": 50.0, "potassium": 140.0}
-        },
-        "quantity": 200.0,
-        "unit": "ml"
-      },
-      {
-        "ingredient": {
-          "id": "ing_tea_leaves",
-          "name": "Tea Leaves / Chai Patti",
-          "brand": "Tata Tea",
-          "category": "Beverages",
-          "nutritionPer": {"amount": 2.0, "unit": "g"},
-          "macros": {
-            "calories": 2.0,
-            "protein": 0.1,
-            "carbs": 0.4,
-            "fat": 0.0,
-            "fiber": 0.0,
-            "sugar": 0.0
-          },
-          "micros": {"sodium": 1.0, "potassium": 15.0}
-        },
-        "quantity": 2.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_sugar",
-          "name": "White Sugar",
-          "brand": "Madhur",
-          "category": "Condiments",
-          "nutritionPer": {"amount": 5.0, "unit": "g"},
-          "macros": {
-            "calories": 20.0,
-            "protein": 0.0,
-            "carbs": 5.0,
-            "fat": 0.0,
-            "fiber": 0.0,
-            "sugar": 5.0
-          },
-          "micros": {"sodium": 0.0, "potassium": 0.0}
-        },
-        "quantity": 5.0,
-        "unit": "g"
-      }
-    ]
-  },
-  {
-    "id": "meal_oats_02",
-    "name": "Power Protein Oats Bowl",
-    "category": "Breakfast",
-    "servings": 1,
-    "items": [
-      {
-        "ingredient": {
-          "id": "ing_rolled_oats",
-          "name": "Rolled Oats",
-          "brand": "Quaker",
-          "category": "Grains",
-          "nutritionPer": {"amount": 50.0, "unit": "g"},
-          "macros": {
-            "calories": 194.0,
-            "protein": 6.8,
-            "carbs": 33.2,
-            "fat": 3.6,
-            "fiber": 5.1,
-            "sugar": 0.8
-          },
-          "micros": {"sodium": 2.0, "potassium": 180.0}
-        },
-        "quantity": 50.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_whey_protein",
-          "name": "Whey Protein Isolate",
-          "brand": "Optimum Nutrition",
-          "category": "Supplements",
-          "nutritionPer": {"amount": 30.0, "unit": "g"},
-          "macros": {
-            "calories": 120.0,
-            "protein": 24.0,
-            "carbs": 2.0,
-            "fat": 1.0,
-            "fiber": 0.5,
-            "sugar": 1.0
-          },
-          "micros": {"sodium": 130.0, "potassium": 160.0}
-        },
-        "quantity": 30.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_banana",
-          "name": "Fresh Banana",
-          "brand": null,
-          "category": "Fruits",
-          "nutritionPer": {"amount": 100.0, "unit": "g"},
-          "macros": {
-            "calories": 89.0,
-            "protein": 1.1,
-            "carbs": 22.8,
-            "fat": 0.3,
-            "fiber": 2.6,
-            "sugar": 12.2
-          },
-          "micros": {"sodium": 1.0, "potassium": 358.0}
-        },
-        "quantity": 100.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_peanut_butter",
-          "name": "Natural Peanut Butter",
-          "brand": "Pintola",
-          "category": "Nuts & Seeds",
-          "nutritionPer": {"amount": 32.0, "unit": "g"},
-          "macros": {
-            "calories": 190.0,
-            "protein": 8.0,
-            "carbs": 7.0,
-            "fat": 16.0,
-            "fiber": 2.0,
-            "sugar": 2.0
-          },
-          "micros": {"sodium": 5.0, "potassium": 210.0}
-        },
-        "quantity": 16.0,
-        "unit": "g"
-      }
-    ]
-  },
-  {
-    "id": "meal_chicken_rice_03",
-    "name": "Grilled Chicken with Rice",
-    "category": "Lunch",
-    "servings": 1,
-    "items": [
-      {
-        "ingredient": {
-          "id": "ing_chicken_breast",
-          "name": "Raw Chicken Breast",
-          "brand": null,
-          "category": "Protein",
-          "nutritionPer": {"amount": 100.0, "unit": "g"},
-          "macros": {
-            "calories": 165.0,
-            "protein": 31.0,
-            "carbs": 0.0,
-            "fat": 3.6,
-            "fiber": 0.0,
-            "sugar": 0.0
-          },
-          "micros": {"sodium": 74.0, "potassium": 256.0}
-        },
-        "quantity": 150.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_white_rice",
-          "name": "Cooked White Rice (Basmati)",
-          "brand": "India Gate",
-          "category": "Grains",
-          "nutritionPer": {"amount": 100.0, "unit": "g"},
-          "macros": {
-            "calories": 130.0,
-            "protein": 2.7,
-            "carbs": 28.2,
-            "fat": 0.3,
-            "fiber": 0.4,
-            "sugar": 0.1
-          },
-          "micros": {"sodium": 1.0, "potassium": 35.0}
-        },
-        "quantity": 150.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_olive_oil",
-          "name": "Extra Virgin Olive Oil",
-          "brand": "Borges",
-          "category": "Oils & Fats",
-          "nutritionPer": {"amount": 10.0, "unit": "ml"},
-          "macros": {
-            "calories": 88.0,
-            "protein": 0.0,
-            "carbs": 0.0,
-            "fat": 10.0,
-            "fiber": 0.0,
-            "sugar": 0.0
-          },
-          "micros": {"sodium": 0.0, "potassium": 0.0}
-        },
-        "quantity": 5.0,
-        "unit": "ml"
-      }
-    ]
-  },
-  {
-    "id": "meal_eggs_toast_04",
-    "name": "Eggs & Brown Bread Toast",
-    "category": "Breakfast",
-    "servings": 1,
-    "items": [
-      {
-        "ingredient": {
-          "id": "ing_whole_egg",
-          "name": "Whole Egg (Large)",
-          "brand": null,
-          "category": "Protein",
-          "nutritionPer": {"amount": 50.0, "unit": "g"},
-          "macros": {
-            "calories": 74.0,
-            "protein": 6.3,
-            "carbs": 0.4,
-            "fat": 5.0,
-            "fiber": 0.0,
-            "sugar": 0.2
-          },
-          "micros": {"sodium": 71.0, "potassium": 69.0}
-        },
-        "quantity": 100.0,
-        "unit": "g"
-      },
-      {
-        "ingredient": {
-          "id": "ing_brown_bread",
-          "name": "Brown Bread (1 Slice)",
-          "brand": "Harvest Gold",
-          "category": "Grains",
-          "nutritionPer": {"amount": 40.0, "unit": "g"},
-          "macros": {
-            "calories": 95.0,
-            "protein": 3.8,
-            "carbs": 17.5,
-            "fat": 1.2,
-            "fiber": 2.4,
-            "sugar": 1.8
-          },
-          "micros": {"sodium": 140.0, "potassium": 80.0}
-        },
-        "quantity": 80.0,
-        "unit": "g"
-      }
-    ]
-  }
-]
-''';
 }

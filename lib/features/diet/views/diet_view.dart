@@ -100,10 +100,155 @@ class DietView extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(AppSizes.lg, AppSizes.sm, AppSizes.lg, 120),
+            padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.sm, AppSizes.screenPadding, 120),
             sliver: Obx(
               () => SliverList(
                 delegate: SliverChildListDelegate([
+                  // ── 7-Day Calendar Strip (Mon - Sun) ───────────
+                  AppCard(
+                    isDark: isDark,
+                    padding: const EdgeInsets.all(AppSizes.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Nutrition Tracker',
+                              style: GoogleFonts.manrope(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: s.primary,
+                              ),
+                            ),
+                            if (controller.selectedDayIndex.value != controller.todayDayIndex)
+                              GestureDetector(
+                                onTap: () => controller.selectDay(controller.todayDayIndex),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: s.brandSoft,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(LucideIcons.rotate_ccw, size: 10, color: s.brand),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Jump to Today',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: s.brand,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSizes.sm + 2),
+
+                        // Day Strip
+                        Row(
+                          children: List.generate(7, (index) {
+                            final now = DateTime.now();
+                            final currentWeekday = now.weekday; // 1 = Mon, 7 = Sun
+                            final mondayDate = now.subtract(Duration(days: currentWeekday - 1));
+                            final dayDate = mondayDate.add(Duration(days: index));
+                            final dateNum = dayDate.day.toString();
+
+                            const dayShorts = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                            final dayShort = dayShorts[index];
+                            final isSelected = controller.selectedDayIndex.value == index;
+                            final isToday = index == controller.todayDayIndex;
+
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(right: index < 6 ? 4 : 0),
+                                child: GestureDetector(
+                                  onTap: () => controller.selectDay(index),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? s.brand
+                                          : (isToday
+                                              ? (isDark ? s.brand.withValues(alpha: 0.16) : s.brandSoft)
+                                              : (isDark ? AppColors.surfaceDark2 : AppColors.surfaceLight)),
+                                      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? s.brand
+                                            : (isToday ? s.brand : s.border.withValues(alpha: 0.7)),
+                                        width: isSelected || isToday ? 1.5 : 1.0,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: s.brand.withValues(alpha: isDark ? 0.3 : 0.22),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 3),
+                                              )
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          dayShort,
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 11,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w700
+                                                : (isToday ? FontWeight.w700 : FontWeight.w600),
+                                            color: isSelected
+                                                ? Colors.white.withValues(alpha: 0.9)
+                                                : (isToday ? s.brand : s.secondary),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          dateNum,
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : (isToday ? s.brand : s.primary),
+                                          ),
+                                        ),
+                                        if (isToday) ...[
+                                          const SizedBox(height: 3),
+                                          Container(
+                                            width: 4,
+                                            height: 4,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: isSelected ? Colors.white : s.brand,
+                                            ),
+                                          ),
+                                        ] else ...[
+                                          const SizedBox(height: 7),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+
                   // ── Unified Nutrition & Macros Tracking Card ────────
                   AppCard(
                     isDark: isDark,

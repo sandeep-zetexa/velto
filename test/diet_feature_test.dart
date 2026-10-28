@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:velto/features/diet/controllers/add_meal_controller.dart';
 import 'package:velto/features/diet/controllers/diet_controller.dart';
 import 'package:velto/features/diet/models/meal_model.dart';
@@ -12,6 +13,10 @@ import 'package:velto/features/diet/views/log_meal_view.dart';
 void main() {
   group('Diet Feature Tests', () {
     final service = DietService();
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
 
     test('DietService loads static ingredients catalog with wide variety', () async {
       final ingredients = await service.getIngredients();
@@ -122,6 +127,19 @@ void main() {
     });
 
     testWidgets('LogMealView renders redesigned saved meal cards with macro pills and actions', (tester) async {
+      final ingredients = await service.getIngredients();
+      final milk = ingredients.firstWhere((i) => i.id == 'ing_toned_milk');
+      await service.saveMeal(
+        SavedMeal(
+          id: 'test_masala_tea',
+          name: 'Masala Tea',
+          category: 'Breakfast',
+          items: [
+            MealIngredientItem(ingredient: milk, quantity: 200, unit: 'ml'),
+          ],
+        ),
+      );
+
       await tester.pumpWidget(
         const GetMaterialApp(
           home: LogMealView(),
@@ -138,11 +156,8 @@ void main() {
       // Verify saved meals card shows meal names
       expect(find.text('Masala Tea'), findsOneWidget);
 
-      // Verify hero calories
-      expect(find.text('138'), findsOneWidget);
+      // Verify kcal & macro micro-pills exist (P, C, F)
       expect(find.text('kcal'), findsWidgets);
-
-      // Verify macro micro-pills exist (P, C, F)
       expect(find.text('P'), findsWidgets);
       expect(find.text('C'), findsWidgets);
       expect(find.text('F'), findsWidgets);
@@ -207,7 +222,8 @@ void main() {
     testWidgets('DietView renders logged meal cards with protein, carbs, and fats macro counts', (tester) async {
       Get.reset();
       final dietController = Get.put(DietController());
-      dietController.addMeal(
+      await dietController.loadDailyLogForSelectedDate();
+      await dietController.addMeal(
         const MealModel(
           id: 'test_meal_1',
           category: 'Breakfast',

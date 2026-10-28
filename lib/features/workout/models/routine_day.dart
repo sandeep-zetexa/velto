@@ -61,6 +61,14 @@ class RoutineDay {
         'exercises': exercises.map((e) => e.toJson()).toList(),
       };
 
+  Map<String, dynamic> toMinimalJson() => {
+        'dayName': dayName,
+        'dayShort': dayShort,
+        'muscles': muscles,
+        'isRestDay': isRestDay,
+        'exercises': exercises.map((e) => e.toMinimalJson()).toList(),
+      };
+
   factory RoutineDay.fromJson(Map<String, dynamic> json) => RoutineDay(
         dayName: json['dayName'] as String,
         dayShort: json['dayShort'] as String,
@@ -72,6 +80,31 @@ class RoutineDay {
         exercises: (json['exercises'] as List<dynamic>?)
                 ?.map((e) =>
                     WorkoutExerciseItem.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+      );
+
+  factory RoutineDay.fromMinimalJson(
+    Map<String, dynamic> json,
+    Map<String, Exercise> exerciseMap,
+  ) =>
+      RoutineDay(
+        dayName: json['dayName'] as String,
+        dayShort: json['dayShort'] as String,
+        muscles: (json['muscles'] as List<dynamic>?)
+                ?.map((m) => m.toString())
+                .toList() ??
+            const [],
+        isRestDay: json['isRestDay'] as bool? ?? false,
+        exercises: (json['exercises'] as List<dynamic>?)
+                ?.map((e) {
+                  final itemMap = Map<String, dynamic>.from(e as Map);
+                  final exId = itemMap['exerciseId'] as String? ?? '';
+                  final resolved = exerciseMap[exId];
+                  if (resolved == null) return null;
+                  return WorkoutExerciseItem.fromMinimalJson(itemMap, resolved);
+                })
+                .whereType<WorkoutExerciseItem>()
                 .toList() ??
             const [],
       );

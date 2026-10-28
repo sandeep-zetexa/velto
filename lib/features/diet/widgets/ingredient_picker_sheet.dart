@@ -138,7 +138,7 @@ class _IngredientPickerSheetState extends State<IngredientPickerSheet> {
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg, vertical: AppSizes.xs),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding, vertical: AppSizes.xs),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -188,7 +188,7 @@ class _IngredientPickerSheetState extends State<IngredientPickerSheet> {
       children: [
         // Search bar
         Padding(
-          padding: const EdgeInsets.fromLTRB(AppSizes.lg, AppSizes.md, AppSizes.lg, AppSizes.sm),
+          padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.md, AppSizes.screenPadding, AppSizes.sm),
           child: AppSearchBar(
             controller: _searchController,
             hintText: 'Search milk, oats, eggs, chicken...',
@@ -203,7 +203,7 @@ class _IngredientPickerSheetState extends State<IngredientPickerSheet> {
           child: Obx(() {
             final selected = widget.controller.catalogCategory.value;
             return ListView(
-              padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg),
+              padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding),
               scrollDirection: Axis.horizontal,
               children: widget.controller.catalogCategories.map((cat) {
                 final isSelected = selected == cat;
@@ -262,7 +262,7 @@ class _IngredientPickerSheetState extends State<IngredientPickerSheet> {
             }
 
             return ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg, vertical: AppSizes.sm),
+              padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding, vertical: AppSizes.sm),
               itemCount: list.length,
               separatorBuilder: (_, index) => const SizedBox(height: AppSizes.sm),
               itemBuilder: (context, index) {
@@ -352,7 +352,7 @@ class _IngredientPickerSheetState extends State<IngredientPickerSheet> {
         : [25.0, 50.0, 100.0, 150.0, 200.0];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSizes.lg),
+      padding: const EdgeInsets.all(AppSizes.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

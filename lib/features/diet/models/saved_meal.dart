@@ -60,6 +60,23 @@ class MealIngredientItem {
     'quantity': quantity,
     'unit': unit,
   };
+
+  Map<String, dynamic> toMinimalJson() => {
+    'ingredientId': ingredient.id,
+    'quantity': quantity,
+    'unit': unit,
+  };
+
+  factory MealIngredientItem.fromMinimalJson(
+    Map<String, dynamic> json,
+    Ingredient resolvedIngredient,
+  ) {
+    return MealIngredientItem(
+      ingredient: resolvedIngredient,
+      quantity: (json['quantity'] as num).toDouble(),
+      unit: json['unit'] ?? resolvedIngredient.nutritionPer.unit,
+    );
+  }
 }
 
 /// Represents a user-saved meal or recipe composed of multiple ingredients.
@@ -136,6 +153,37 @@ class SavedMeal {
     'servings': servings,
     'items': items.map((e) => e.toJson()).toList(),
   };
+
+  Map<String, dynamic> toMinimalJson() => {
+    'id': id,
+    'name': name,
+    'category': category,
+    'servings': servings,
+    'items': items.map((e) => e.toMinimalJson()).toList(),
+  };
+
+  factory SavedMeal.fromMinimalJson(
+    Map<String, dynamic> json,
+    Map<String, Ingredient> ingredientMap,
+  ) {
+    return SavedMeal(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      category: json['category'] as String? ?? 'Snack',
+      servings: json['servings'] as int? ?? 1,
+      items: (json['items'] as List<dynamic>?)
+              ?.map((item) {
+                final m = Map<String, dynamic>.from(item as Map);
+                final ingId = m['ingredientId'] as String? ?? '';
+                final resolved = ingredientMap[ingId];
+                if (resolved == null) return null;
+                return MealIngredientItem.fromMinimalJson(m, resolved);
+              })
+              .whereType<MealIngredientItem>()
+              .toList() ??
+          const [],
+    );
+  }
 
   SavedMeal copyWith({
     String? id,

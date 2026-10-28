@@ -86,4 +86,26 @@ class MealModel {
       fats: fats ?? this.fats,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'category': category,
+        'time': time,
+        'title': title,
+        'calories': calories,
+        'protein': protein,
+        'carbs': carbs,
+        'fats': fats,
+      };
+
+  factory MealModel.fromJson(Map<String, dynamic> json) => MealModel(
+        id: json['id'] as String,
+        category: json['category'] as String? ?? 'Snack',
+        time: json['time'] as String? ?? '12:00 PM',
+        title: json['title'] as String? ?? 'Logged Meal',
+        calories: json['calories'] as int? ?? 0,
+        protein: json['protein'] as int? ?? 0,
+        carbs: json['carbs'] as int? ?? 0,
+        fats: json['fats'] as int? ?? 0,
+      );
 }

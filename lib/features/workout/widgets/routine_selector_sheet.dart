@@ -7,7 +7,6 @@ import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/workout/controllers/workout_controller.dart';
-import 'package:velto/features/workout/models/routine_day.dart';
 import 'package:velto/features/workout/models/workout_routine.dart';
 
 class RoutineSelectorSheet extends StatelessWidget {
@@ -52,7 +51,7 @@ class RoutineSelectorSheet extends StatelessWidget {
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg, vertical: AppSizes.xs),
+            padding: const EdgeInsets.fromLTRB(AppSizes.md, AppSizes.xs, AppSizes.xs, AppSizes.xs),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -60,18 +59,38 @@ class RoutineSelectorSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Workout Routines',
-                        style: GoogleFonts.manrope(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: s.primary,
-                          letterSpacing: -0.3,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'Workout Routines',
+                            style: GoogleFonts.manrope(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: s.primary,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Obx(() => Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: s.brandSoft,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${controller.allRoutines.length}',
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: s.brand,
+                                  ),
+                                ),
+                              )),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Select active plan or build your custom split',
+                        'Tap any plan to activate or customize',
                         style: GoogleFonts.manrope(
                           fontSize: 12,
                           color: s.secondary,
@@ -97,17 +116,59 @@ class RoutineSelectorSheet extends StatelessWidget {
             child: Obx(() {
               final routines = controller.allRoutines.toList();
 
+              if (routines.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSizes.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.dumbbell, size: 48, color: s.secondary.withValues(alpha: 0.5)),
+                        const SizedBox(height: AppSizes.md),
+                        Text(
+                          'No Workout Routines',
+                          style: GoogleFonts.manrope(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: s.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'You haven\'t created any workout splits yet.\nTap below to build your first routine.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.manrope(
+                            fontSize: 13,
+                            color: s.secondary,
+                          ),
+                        ),
+                        const SizedBox(height: AppSizes.lg),
+                        AppButton.primary(
+                          text: 'Create Routine',
+                          icon: LucideIcons.plus,
+                          size: AppButtonSize.sm,
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Get.toNamed(Routes.addRoutine);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               return ListView.separated(
-                padding: const EdgeInsets.all(AppSizes.lg),
+                padding: const EdgeInsets.fromLTRB(AppSizes.md, AppSizes.sm, AppSizes.md, AppSizes.sm),
                 itemCount: routines.length,
-                separatorBuilder: (_, _) => const SizedBox(height: AppSizes.md),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final routine = routines[index];
                   final isActive = routine.isActive;
 
                   return Material(
                     color: isDark ? AppColors.surfaceDark2 : Colors.white,
-                    borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                     child: InkWell(
                       onTap: isActive
                           ? null
@@ -115,15 +176,24 @@ class RoutineSelectorSheet extends StatelessWidget {
                               controller.switchActiveRoutine(routine.id);
                               Navigator.pop(context);
                             },
-                      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                      borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                       child: Container(
-                        padding: const EdgeInsets.all(AppSizes.md),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                           border: Border.all(
                             color: isActive ? s.brand : s.border,
                             width: isActive ? 1.5 : 1.0,
                           ),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: s.brand.withValues(alpha: isDark ? 0.2 : 0.08),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,21 +202,21 @@ class RoutineSelectorSheet extends StatelessWidget {
                             Row(
                               children: [
                                 Container(
-                                  width: 40,
-                                  height: 40,
+                                  width: 36,
+                                  height: 36,
                                   decoration: BoxDecoration(
                                     color: isActive
                                         ? s.brandSoft
                                         : (isDark ? AppColors.surfaceDark : AppColors.secondarySoft),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     LucideIcons.dumbbell,
-                                    size: 18,
+                                    size: 16,
                                     color: isActive ? s.brand : s.secondary,
                                   ),
                                 ),
-                                const SizedBox(width: AppSizes.md),
+                                const SizedBox(width: AppSizes.sm + 2),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,20 +224,18 @@ class RoutineSelectorSheet extends StatelessWidget {
                                       Text(
                                         routine.name,
                                         style: GoogleFonts.manrope(
-                                          fontSize: 15,
+                                          fontSize: 14.5,
                                           fontWeight: FontWeight.w800,
                                           color: s.primary,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      const SizedBox(height: 3),
-                                      Wrap(
-                                        spacing: 5,
-                                        runSpacing: 3,
+                                      const SizedBox(height: 2),
+                                      Row(
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                             decoration: BoxDecoration(
                                               color: s.brandSoft,
                                               borderRadius: BorderRadius.circular(4),
@@ -175,22 +243,23 @@ class RoutineSelectorSheet extends StatelessWidget {
                                             child: Text(
                                               '${routine.totalWorkoutsInWeek}d/week',
                                               style: GoogleFonts.manrope(
-                                                fontSize: 10,
+                                                fontSize: 9.5,
                                                 fontWeight: FontWeight.w700,
                                                 color: s.brand,
                                               ),
                                             ),
                                           ),
+                                          const SizedBox(width: 4),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                             decoration: BoxDecoration(
                                               color: isDark ? AppColors.surfaceDark : AppColors.secondarySoft,
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
-                                              '${routine.totalExercisesInWeek} ex',
+                                              '${routine.totalExercisesInWeek} exercises',
                                               style: GoogleFonts.manrope(
-                                                fontSize: 10,
+                                                fontSize: 9.5,
                                                 fontWeight: FontWeight.w600,
                                                 color: s.secondary,
                                               ),
@@ -201,9 +270,10 @@ class RoutineSelectorSheet extends StatelessWidget {
                                     ],
                                   ),
                                 ),
+                                const SizedBox(width: 6),
                                 if (isActive)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                                     decoration: BoxDecoration(
                                       color: s.brandSoft,
                                       borderRadius: BorderRadius.circular(AppSizes.radiusRound),
@@ -212,12 +282,12 @@ class RoutineSelectorSheet extends StatelessWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(LucideIcons.check, size: 12, color: s.brand),
-                                        const SizedBox(width: 4),
+                                        Icon(LucideIcons.check, size: 11, color: s.brand),
+                                        const SizedBox(width: 3),
                                         Text(
                                           'ACTIVE',
                                           style: GoogleFonts.manrope(
-                                            fontSize: 9.5,
+                                            fontSize: 9,
                                             fontWeight: FontWeight.w800,
                                             color: s.brand,
                                             letterSpacing: 0.3,
@@ -239,179 +309,240 @@ class RoutineSelectorSheet extends StatelessWidget {
                               ],
                             ),
 
-                            const SizedBox(height: AppSizes.sm),
+                            const SizedBox(height: 10),
 
-                            // Description
-                            Text(
-                              routine.description,
-                              style: GoogleFonts.manrope(
-                                fontSize: 12,
-                                color: s.secondary,
-                                height: 1.35,
-                              ),
-                            ),
-
-                            const SizedBox(height: AppSizes.sm),
-
-                            // 2. Structured 7-Day Calendar Rhythm Strip
+                            // 2. Horizontally Scrollable 7-Day Rhythm Strip
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                              padding: const EdgeInsets.all(AppSizes.sm),
                               decoration: BoxDecoration(
                                 color: isDark ? AppColors.surfaceDark : AppColors.bgLight,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                                 border: Border.all(color: s.border.withValues(alpha: 0.6)),
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: routine.days.map((d) {
-                                  final isRest = d.isRestDay;
-                                  final muscleAbbr = _shortMuscleAbbr(d);
-
-                                  return Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Column(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
                                         children: [
+                                          Icon(LucideIcons.calendar_days, size: 11, color: s.secondary),
+                                          const SizedBox(width: 4),
                                           Text(
-                                            d.dayShort.substring(0, 1),
+                                            '7-Day Breakdown',
                                             style: GoogleFonts.manrope(
-                                              fontSize: 10,
+                                              fontSize: 10.5,
                                               fontWeight: FontWeight.w700,
-                                              color: isRest ? s.tertiary : s.secondary,
+                                              color: s.secondary,
                                             ),
                                           ),
-                                          const SizedBox(height: 5),
-                                          Container(
-                                            height: 24,
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                              color: isRest
-                                                  ? Colors.transparent
-                                                  : (isActive
-                                                      ? s.brandSoft
-                                                      : (isDark ? AppColors.surfaceDark2 : Colors.white)),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(
-                                                color: isRest
-                                                    ? s.border.withValues(alpha: 0.4)
-                                                    : (isActive
-                                                        ? s.brand.withValues(alpha: 0.3)
-                                                        : s.border),
-                                              ),
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Swipe for all days',
+                                            style: GoogleFonts.manrope(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w600,
+                                              color: s.tertiary,
                                             ),
-                                            child: isRest
-                                                ? Icon(
-                                                    LucideIcons.sparkles,
-                                                    size: 11,
-                                                    color: s.tertiary,
-                                                  )
-                                                : Text(
-                                                    muscleAbbr,
+                                          ),
+                                          const SizedBox(width: 1),
+                                          Icon(LucideIcons.chevron_right, size: 10, color: s.tertiary),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Row(
+                                      children: routine.days.asMap().entries.map((entry) {
+                                        final index = entry.key;
+                                        final d = entry.value;
+                                        final isRest = d.isRestDay;
+                                        final isToday = index == controller.todayDayIndex;
+
+                                        return Container(
+                                          width: 116,
+                                          height: 82,
+                                          margin: EdgeInsets.only(
+                                            right: index == routine.days.length - 1 ? 0 : 7,
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: isRest
+                                                ? (isToday
+                                                    ? (isDark ? s.brand.withValues(alpha: 0.12) : s.brandSoft)
+                                                    : (isDark ? AppColors.surfaceDark2 : Colors.white))
+                                                : (isActive
+                                                    ? (isToday ? s.brand.withValues(alpha: 0.22) : s.brandSoft)
+                                                    : (isToday
+                                                        ? (isDark ? s.brand.withValues(alpha: 0.15) : s.brandSoft)
+                                                        : (isDark ? AppColors.surfaceDark2 : Colors.white))),
+                                            borderRadius: BorderRadius.circular(AppSizes.radiusSm + 2),
+                                            border: Border.all(
+                                              color: isToday
+                                                  ? s.brand
+                                                  : (isRest
+                                                      ? s.border.withValues(alpha: 0.5)
+                                                      : (isActive ? s.brand.withValues(alpha: 0.35) : s.border)),
+                                              width: isToday ? 1.5 : 1.0,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    d.dayShort,
+                                                    style: GoogleFonts.manrope(
+                                                      fontSize: 10.5,
+                                                      fontWeight: isToday ? FontWeight.w800 : FontWeight.w700,
+                                                      color: isToday
+                                                          ? s.brand
+                                                          : (isRest ? s.tertiary : s.secondary),
+                                                    ),
+                                                  ),
+                                                  if (isToday)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                      decoration: BoxDecoration(
+                                                        color: s.brand,
+                                                        borderRadius: BorderRadius.circular(3),
+                                                      ),
+                                                      child: Text(
+                                                        'TODAY',
+                                                        style: GoogleFonts.manrope(
+                                                          fontSize: 7,
+                                                          fontWeight: FontWeight.w800,
+                                                          color: Colors.white,
+                                                          letterSpacing: 0.2,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  else if (isRest)
+                                                    Icon(LucideIcons.sparkles, size: 11, color: s.tertiary),
+                                                ],
+                                              ),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    isRest ? 'Rest Day' : d.musclesDisplay,
+                                                    style: GoogleFonts.manrope(
+                                                      fontSize: 11,
+                                                      fontWeight: isToday ? FontWeight.w800 : FontWeight.w700,
+                                                      color: isToday
+                                                          ? s.brand
+                                                          : (isActive ? s.brand : s.primary),
+                                                      height: 1.15,
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    isRest
+                                                        ? 'Recovery'
+                                                        : (d.exercises.isEmpty
+                                                            ? 'No exercises'
+                                                            : '${d.exercises.length} ex · ${d.totalSets} sets'),
                                                     style: GoogleFonts.manrope(
                                                       fontSize: 9,
-                                                      fontWeight: FontWeight.w700,
-                                                      color: isActive ? s.brand : s.primary,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: isToday
+                                                          ? s.brand.withValues(alpha: 0.85)
+                                                          : s.secondary,
                                                     ),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-
-                            const SizedBox(height: AppSizes.xs + 2),
-
-                            // Focus Summary Line
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                              child: Row(
-                                children: [
-                                  Icon(LucideIcons.target, size: 12, color: s.brand),
-                                  const SizedBox(width: 5),
-                                  Expanded(
-                                    child: Text(
-                                      _routineFocus(routine),
-                                      style: GoogleFonts.manrope(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: s.secondary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                        );
+                                      }).toList(),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
 
-                            const SizedBox(height: AppSizes.xs),
-                            Divider(height: 1, color: s.border.withValues(alpha: 0.5)),
-                            const SizedBox(height: AppSizes.xs),
+                            const SizedBox(height: 8),
 
-                            // 3. Action Buttons & Status Footer
+                            // 3. Compact Bottom Focus & Actions Bar
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Flexible(
+                                Icon(LucideIcons.target, size: 11, color: s.secondary),
+                                const SizedBox(width: 4),
+                                Expanded(
                                   child: Text(
-                                    isActive ? 'Current active plan' : 'Tap card to switch',
+                                    _routineFocus(routine),
                                     style: GoogleFonts.manrope(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isActive ? s.brand : s.tertiary,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: s.secondary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton.icon(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        Get.toNamed(Routes.addRoutine, arguments: routine);
-                                      },
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        minimumSize: Size.zero,
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      icon: Icon(LucideIcons.pencil, size: 12, color: s.secondary),
-                                      label: Text(
-                                        'Edit Plan',
-                                        style: GoogleFonts.manrope(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: s.secondary,
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Get.toNamed(Routes.addRoutine, arguments: routine);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(LucideIcons.pencil, size: 12, color: s.secondary),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'Edit',
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: s.secondary,
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 6),
-                                    TextButton.icon(
-                                      onPressed: () => _confirmDeleteRoutine(context, controller, routine),
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        minimumSize: Size.zero,
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      icon: const Icon(LucideIcons.trash_2, size: 12, color: AppColors.rose),
-                                      label: Text(
-                                        'Delete',
-                                        style: GoogleFonts.manrope(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.rose,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                GestureDetector(
+                                  onTap: () => _confirmDeleteRoutine(context, controller, routine),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(LucideIcons.trash_2, size: 12, color: AppColors.rose),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'Delete',
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.rose,
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -428,14 +559,14 @@ class RoutineSelectorSheet extends StatelessWidget {
           // Bottom Action: Create New Routine
           Container(
             padding: EdgeInsets.fromLTRB(
-              AppSizes.lg,
               AppSizes.md,
-              AppSizes.lg,
-              MediaQuery.of(context).padding.bottom + AppSizes.md,
+              AppSizes.sm + 2,
+              AppSizes.md,
+              MediaQuery.of(context).padding.bottom + AppSizes.sm,
             ),
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark2 : s.surface,
-              border: Border(top: BorderSide(color: s.border)),
+              border: Border(top: BorderSide(color: s.border.withValues(alpha: 0.7))),
             ),
             child: AppButton.primary(
               text: 'Create New Workout Routine',
@@ -453,23 +584,7 @@ class RoutineSelectorSheet extends StatelessWidget {
     );
   }
 
-  String _shortMuscleAbbr(RoutineDay day) {
-    if (day.isRestDay) return 'Rest';
-    if (day.muscles.isEmpty) return 'Train';
-    final first = day.muscles.first.toLowerCase();
-    if (first.contains('chest')) return 'Chest';
-    if (first.contains('back')) return 'Back';
-    if (first.contains('leg')) return 'Legs';
-    if (first.contains('shoulder')) return 'Shld';
-    if (first.contains('bicep') || first.contains('tricep') || first.contains('arm')) return 'Arms';
-    if (first.contains('abs') || first.contains('core')) return 'Abs';
-    if (first.contains('cardio')) return 'Cardio';
-    if (first.contains('push')) return 'Push';
-    if (first.contains('pull')) return 'Pull';
-    if (first.contains('upper')) return 'Upper';
-    if (first.contains('lower')) return 'Lower';
-    return day.muscles.first.length > 5 ? day.muscles.first.substring(0, 4) : day.muscles.first;
-  }
+
 
   String _routineFocus(WorkoutRoutine routine) {
     final workoutDays = routine.days.where((d) => !d.isRestDay && d.muscles.isNotEmpty);
