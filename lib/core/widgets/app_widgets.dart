@@ -124,60 +124,72 @@ class AppEmptyState extends StatelessWidget {
     final resolvedIconColor = iconColor ?? s.brand;
     final resolvedIconBg = iconBg ?? s.brandSoft;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.xl),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Icon bubble
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: resolvedIconBg,
-              borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSizes.xl,
+          horizontal: AppSizes.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Icon bubble
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: resolvedIconBg,
+                borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+              ),
+              child: Icon(
+                icon ?? LucideIcons.inbox,
+                size: 28,
+                color: resolvedIconColor,
+              ),
             ),
-            child: Icon(
-              icon ?? LucideIcons.inbox,
-              size: 28,
-              color: resolvedIconColor,
-            ),
-          ),
-          const SizedBox(height: AppSizes.md),
-
-          // Title
-          Text(
-            title,
-            style: GoogleFonts.manrope(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: s.primary,
-              letterSpacing: -0.2,
-            ),
-          ),
-
-          // Subtitle
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(fontSize: 12, color: s.secondary),
-            ),
-          ],
-
-          // Optional action button
-          if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: AppSizes.md),
-            AppButton(
-              text: actionLabel!,
-              onPressed: onAction,
-              size: AppButtonSize.sm,
-              customBgColor: resolvedIconBg,
-              customTextColor: resolvedIconColor,
+
+            // Title
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: s.primary,
+                letterSpacing: -0.2,
+              ),
             ),
+
+            // Subtitle
+            if (subtitle != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.manrope(
+                  fontSize: 13,
+                  color: s.secondary,
+                  height: 1.4,
+                ),
+              ),
+            ],
+
+            // Optional action button
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: AppSizes.lg),
+              AppButton(
+                text: actionLabel!,
+                onPressed: onAction,
+                size: AppButtonSize.sm,
+                customBgColor: resolvedIconBg,
+                customTextColor: resolvedIconColor,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -253,11 +253,11 @@ class _IngredientPickerSheetState extends State<IngredientPickerSheet> {
             }
 
             if (list.isEmpty) {
-              return Center(
-                child: Text(
-                  'No ingredients found',
-                  style: GoogleFonts.manrope(color: s.secondary),
-                ),
+              return AppEmptyState(
+                isDark: isDark,
+                icon: LucideIcons.utensils,
+                title: 'No ingredients found',
+                subtitle: 'Try searching with another name or brand.',
               );
             }
 

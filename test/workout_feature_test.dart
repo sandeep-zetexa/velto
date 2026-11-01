@@ -525,5 +525,59 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('WorkoutView opens ExercisePickerSheet on "+ Add Exercises" button and adds exercise', (tester) async {
+      Get.reset();
+      Get.testMode = true;
+      final controller = Get.put(WorkoutController());
+      await controller.loadRoutines();
+
+      // Configure a day with 0 exercises
+      final routine = controller.activeRoutine.value!;
+      final updatedDays = List<RoutineDay>.from(routine.days);
+      updatedDays[3] = updatedDays[3].copyWith(isRestDay: false, exercises: [], muscles: ['Chest']);
+      await WorkoutService().saveRoutine(routine.copyWith(days: updatedDays), setActive: true);
+      await controller.loadRoutines();
+      await controller.selectDay(3); // Thursday
+
+      await tester.pumpWidget(
+        const GetMaterialApp(
+          home: WorkoutView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Empty state "+ Add Exercises" button should be visible
+      final addExercisesButton = find.text('+ Add Exercises');
+      expect(addExercisesButton, findsOneWidget);
+
+      // Tap "+ Add Exercises" to open picker sheet
+      await tester.tap(addExercisesButton);
+      await tester.pumpAndSettle();
+
+      // Verify sheet is open
+      expect(find.text('Select Exercise'), findsOneWidget);
+
+      // Select an exercise from list (e.g. Barbell Bench Press)
+      final exerciseCard = find.text('Barbell Bench Press');
+      expect(exerciseCard, findsOneWidget);
+      await tester.tap(exerciseCard);
+      await tester.pumpAndSettle();
+
+      // Verify configure screen
+      expect(find.text('Configure Sets & Weight'), findsOneWidget);
+      expect(find.text('Add to Workout Day'), findsOneWidget);
+
+      // Tap Add to Workout Day
+      await tester.tap(find.text('Add to Workout Day'));
+      await tester.pumpAndSettle();
+
+      // Verify the sheet closed and exercise was added to current day
+      expect(find.text('Select Exercise'), findsNothing);
+      expect(find.text('Barbell Bench Press'), findsOneWidget);
+      expect(controller.selectedDay?.exercises.isNotEmpty, isTrue);
+
+      expect(tester.takeException(), isNull);
+    });
   });
 }

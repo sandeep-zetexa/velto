@@ -8,6 +8,7 @@ import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/workout/controllers/add_routine_controller.dart';
 import 'package:velto/features/workout/models/exercise.dart';
 import 'package:velto/features/workout/widgets/exercise_picker_sheet.dart';
+import 'package:velto/features/workout/widgets/exercise_svg_icon.dart';
 
 class AddRoutineView extends StatelessWidget {
   const AddRoutineView({super.key});
@@ -511,8 +512,50 @@ class AddRoutineView extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSizes.sm),
 
-                          // Exercise List with 1-Tap Add/Remove
-                          if (controller.filteredExercisesForCurrentDay.isEmpty)
+                          // Categorized Exercise List for Selected Body Parts
+                          if (day.muscles.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: AppSizes.xl, horizontal: AppSizes.lg),
+                              decoration: BoxDecoration(
+                                color: isDark ? AppColors.surfaceDark2 : AppColors.surfaceLight,
+                                borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                                border: Border.all(color: s.border),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: s.brandSoft,
+                                      borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                                    ),
+                                    child: Icon(LucideIcons.dumbbell, size: 24, color: s.brand),
+                                  ),
+                                  const SizedBox(height: AppSizes.sm),
+                                  Text(
+                                    'No Body Parts Selected',
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: s.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Pick muscle chips above (e.g. Chest, Back, Legs) to see exercises for ${day.dayName}.',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 12,
+                                      color: s.secondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else if (controller.categorizedExercisesForCurrentDay.isEmpty)
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(AppSizes.lg),
@@ -523,12 +566,10 @@ class AddRoutineView extends StatelessWidget {
                               ),
                               child: Column(
                                 children: [
-                                  Icon(LucideIcons.dumbbell, size: 28, color: s.tertiary),
+                                  Icon(LucideIcons.search_x, size: 26, color: s.tertiary),
                                   const SizedBox(height: 6),
                                   Text(
-                                    day.muscles.isEmpty
-                                        ? 'Pick a muscle chip above (e.g. Chest, Back, Legs) to see exercises'
-                                        : 'No exercises found matching your search',
+                                    'No exercises found matching "${controller.exerciseSearchQuery.value}"',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.manrope(
                                       fontSize: 12,
@@ -540,94 +581,175 @@ class AddRoutineView extends StatelessWidget {
                               ),
                             )
                           else
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: controller.filteredExercisesForCurrentDay.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 6),
-                              itemBuilder: (context, exIndex) {
-                                final exercise = controller.filteredExercisesForCurrentDay[exIndex];
-                                final isAdded = controller.isExerciseAdded(exercise);
+                            ...controller.categorizedExercisesForCurrentDay.entries.map((entry) {
+                              final muscleName = entry.key;
+                              final exercises = entry.value;
 
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? AppColors.surfaceDark2 : AppColors.surfaceLight,
-                                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                                    border: Border.all(
-                                      color: isAdded ? s.brand.withValues(alpha: 0.5) : s.border,
-                                      width: isAdded ? 1.5 : 1.0,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              exercise.name,
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: AppSizes.md),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Muscle Category Header
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8, top: 4),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: s.brand,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            muscleName.toUpperCase(),
+                                            style: GoogleFonts.manrope(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                              color: s.primary,
+                                              letterSpacing: 0.6,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: s.brandSoft,
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${exercises.length}',
                                               style: GoogleFonts.manrope(
-                                                fontSize: 13,
+                                                fontSize: 10,
                                                 fontWeight: FontWeight.w700,
-                                                color: s.primary,
+                                                color: s.brand,
                                               ),
                                             ),
-                                            const SizedBox(height: 3),
-                                            Row(
-                                              children: [
-                                                _chip(exercise.targetMuscle, s.brand, s.brandSoft),
-                                                const SizedBox(width: 4),
-                                                _chip(
-                                                  exercise.equipment,
-                                                  s.secondary,
-                                                  isDark ? AppColors.surfaceDark : AppColors.bgLight,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                      GestureDetector(
-                                        onTap: () => controller.toggleExercise(exercise),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(milliseconds: 150),
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    ),
+
+                                    // Exercises in this category
+                                    ListView.separated(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: exercises.length,
+                                      separatorBuilder: (_, _) => const SizedBox(height: 6),
+                                      itemBuilder: (context, exIndex) {
+                                        final exercise = exercises[exIndex];
+                                        final isAdded = controller.isExerciseAdded(exercise);
+
+                                        return InkWell(
+                                          onTap: () => controller.toggleExercise(exercise),
+                                          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                           decoration: BoxDecoration(
-                                            color: isAdded
-                                                ? (isDark ? AppColors.greenSoftDark : AppColors.greenSoft)
-                                                : s.brandSoft,
+                                            color: isDark ? AppColors.surfaceDark2 : AppColors.surfaceLight,
                                             borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                                             border: Border.all(
-                                              color: isAdded ? AppColors.green : s.brand,
+                                              color: isAdded ? s.brand.withValues(alpha: 0.5) : s.border,
+                                              width: isAdded ? 1.5 : 1.0,
                                             ),
                                           ),
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(
-                                                isAdded ? LucideIcons.check : LucideIcons.plus,
-                                                size: 13,
-                                                color: isAdded ? AppColors.green : s.brand,
+                                              // Exercise SVG Icon
+                                              Container(
+                                                width: 38,
+                                                height: 38,
+                                                decoration: BoxDecoration(
+                                                  color: isAdded ? s.brandSoft : (isDark ? AppColors.surfaceDark : AppColors.bgLight),
+                                                  borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                                                ),
+                                                alignment: Alignment.center,
+                                                child: ExerciseSvgIcon(
+                                                  exercise: exercise,
+                                                  size: 20,
+                                                  color: isAdded ? s.brand : s.secondary,
+                                                ),
                                               ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                isAdded ? 'Added' : 'Add',
-                                                style: GoogleFonts.manrope(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: isAdded ? AppColors.green : s.brand,
+                                              const SizedBox(width: 10),
+
+                                              // Exercise Name & Chips
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      exercise.name,
+                                                      style: GoogleFonts.manrope(
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: s.primary,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 3),
+                                                    Row(
+                                                      children: [
+                                                        _chip(exercise.targetMuscle, s.brand, s.brandSoft),
+                                                        const SizedBox(width: 4),
+                                                        _chip(
+                                                          exercise.equipment,
+                                                          s.secondary,
+                                                          isDark ? AppColors.surfaceDark : AppColors.bgLight,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // 1-Tap Add/Remove Button
+                                              GestureDetector(
+                                                onTap: () => controller.toggleExercise(exercise),
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(milliseconds: 150),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    color: isAdded
+                                                        ? (isDark ? AppColors.greenSoftDark : AppColors.greenSoft)
+                                                        : s.brandSoft,
+                                                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                                                    border: Border.all(
+                                                      color: isAdded ? AppColors.green : s.brand,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        isAdded ? LucideIcons.check : LucideIcons.plus,
+                                                        size: 13,
+                                                        color: isAdded ? AppColors.green : s.brand,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        isAdded ? 'Added' : 'Add',
+                                                        style: GoogleFonts.manrope(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w700,
+                                                          color: isAdded ? AppColors.green : s.brand,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
 
                           const SizedBox(height: AppSizes.md),
 

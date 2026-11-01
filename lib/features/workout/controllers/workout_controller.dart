@@ -429,7 +429,16 @@ class WorkoutController extends GetxController {
     if (routine != null) {
       final updatedDay = day.copyWith(exercises: updatedExercises, isRestDay: false);
       final updatedDays = List<RoutineDay>.from(routine.days);
-      updatedDays[selectedDayIndex.value] = updatedDay;
+      final dayIdx = routine.days.indexWhere(
+        (d) => d.dayName.toLowerCase() == day.dayName.toLowerCase(),
+      );
+      if (dayIdx >= 0) {
+        updatedDays[dayIdx] = updatedDay;
+      } else if (selectedDayIndex.value < updatedDays.length) {
+        updatedDays[selectedDayIndex.value] = updatedDay;
+      } else {
+        updatedDays.add(updatedDay);
+      }
       final updatedRoutine = routine.copyWith(days: updatedDays);
       await _workoutService.saveRoutine(updatedRoutine, setActive: true);
       await _refreshActiveRoutine();
@@ -448,7 +457,16 @@ class WorkoutController extends GetxController {
     if (routine != null) {
       final updatedDay = day.copyWith(exercises: updatedExercises);
       final updatedDays = List<RoutineDay>.from(routine.days);
-      updatedDays[selectedDayIndex.value] = updatedDay;
+      final dayIdx = routine.days.indexWhere(
+        (d) => d.dayName.toLowerCase() == day.dayName.toLowerCase(),
+      );
+      if (dayIdx >= 0) {
+        updatedDays[dayIdx] = updatedDay;
+      } else if (selectedDayIndex.value < updatedDays.length) {
+        updatedDays[selectedDayIndex.value] = updatedDay;
+      } else {
+        updatedDays.add(updatedDay);
+      }
       final updatedRoutine = routine.copyWith(days: updatedDays);
       await _workoutService.saveRoutine(updatedRoutine, setActive: true);
       await _refreshActiveRoutine();
@@ -515,14 +533,15 @@ class WorkoutController extends GetxController {
     final day = selectedDay;
     if (day == null) return;
 
-    final updatedLog = (currentDailyLog.value ??
-            DailyWorkoutLog.fromRoutineDay(
-              date: selectedDateKey,
-              routineId: routine?.id ?? '',
-              routineName: routine?.name ?? 'Workout Routine',
-              day: day,
-            ))
-        .copyWith(exercises: exercises);
+    final updatedLog = DailyWorkoutLog(
+      date: selectedDateKey,
+      routineId: routine?.id ?? '',
+      routineName: routine?.name ?? 'Workout Routine',
+      dayName: day.dayName,
+      muscles: day.muscles,
+      isRestDay: false,
+      exercises: exercises,
+    );
 
     currentDailyLog.value = updatedLog;
     await _workoutService.saveDailyLog(updatedLog);

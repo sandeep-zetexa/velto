@@ -8,7 +8,9 @@ import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/workout/controllers/workout_controller.dart';
 import 'package:velto/features/workout/models/exercise.dart';
+import 'package:velto/features/workout/models/routine_day.dart';
 import 'package:velto/features/workout/models/workout_routine.dart';
+import 'package:velto/features/workout/services/workout_service.dart';
 import 'package:velto/features/workout/widgets/exercise_picker_sheet.dart';
 import 'package:velto/features/workout/widgets/exercise_svg_icon.dart';
 import 'package:velto/features/workout/widgets/routine_selector_sheet.dart';
@@ -44,17 +46,16 @@ class WorkoutView extends StatelessWidget {
 
               // ── Empty State: No active routine ─────────────────────────────
               if (activeRoutine == null) {
-                return SliverList(
-                  delegate: SliverChildListDelegate([
-                    AppEmptyState(
-                      isDark: isDark,
-                      icon: LucideIcons.dumbbell,
-                      title: 'No Workout Routine Active',
-                      subtitle: 'You haven\'t set up a workout routine yet.\nTap below to build your custom weekly split.',
-                      actionLabel: 'Create Routine',
-                      onAction: () => Get.toNamed(Routes.addRoutine),
-                    ),
-                  ]),
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: AppEmptyState(
+                    isDark: isDark,
+                    icon: LucideIcons.dumbbell,
+                    title: 'No Workout Routine Active',
+                    subtitle: 'You haven\'t set up a workout routine yet.\nTap below to build your custom weekly split.',
+                    actionLabel: 'Create Routine',
+                    onAction: () => Get.toNamed(Routes.addRoutine),
+                  ),
                 );
               }
 
@@ -911,11 +912,31 @@ class WorkoutView extends StatelessWidget {
     WorkoutController controller,
     dynamic day,
   ) {
+    String initialMuscle = 'All';
+    if (day is RoutineDay && day.muscles.isNotEmpty) {
+      for (final m in day.muscles) {
+        final cleanM = m.replaceAll('+', ' ').split(' ').firstWhere(
+          (w) => WorkoutService.muscleGroups.any((g) => g.toLowerCase() == w.toLowerCase()),
+          orElse: () => '',
+        );
+        if (cleanM.isNotEmpty) {
+          final matched = WorkoutService.muscleGroups.firstWhere(
+            (g) => g.toLowerCase() == cleanM.toLowerCase(),
+            orElse: () => 'All',
+          );
+          if (matched != 'All') {
+            initialMuscle = matched;
+            break;
+          }
+        }
+      }
+    }
+
     ExercisePickerSheet.show(
       context: context,
-      initialMuscle: day.muscles.firstOrNull ?? 'All',
-      onExerciseSelected: (Exercise exercise, int sets, int reps, double weight) {
-        controller.addExerciseToCurrentDay(
+      initialMuscle: initialMuscle,
+      onExerciseSelected: (Exercise exercise, int sets, int reps, double weight) async {
+        await controller.addExerciseToCurrentDay(
           exercise,
           sets: sets,
           reps: reps,

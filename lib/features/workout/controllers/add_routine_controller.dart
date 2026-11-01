@@ -25,7 +25,6 @@ class AddRoutineController extends GetxController {
     'Triceps',
     'Legs',
     'Abs',
-    'Cardio',
   ];
 
   RoutineDay get currentDay => days[selectedDayIndex.value];
@@ -121,38 +120,59 @@ class AddRoutineController extends GetxController {
     }
   }
 
-  List<Exercise> get filteredExercisesForCurrentDay {
+  /// Exercises categorized by the body parts selected for the current day.
+  /// If no body parts are selected, returns empty map so user is prompted to pick body parts first.
+  Map<String, List<Exercise>> get categorizedExercisesForCurrentDay {
     final cur = currentDay;
-    final query = exerciseSearchQuery.value.trim().toLowerCase();
+    if (cur.muscles.isEmpty) return {};
 
-    List<Exercise> list;
-    if (cur.muscles.isEmpty) {
-      list = allExercises;
-    } else {
-      final selectedLower = cur.muscles.map((m) => m.toLowerCase()).toSet();
-      list = allExercises.where((e) {
+    final query = exerciseSearchQuery.value.trim().toLowerCase();
+    final selectedMuscles = cur.muscles
+        .where((m) => !m.toLowerCase().contains('rest'))
+        .toList();
+
+    if (selectedMuscles.isEmpty) return {};
+
+    final Map<String, List<Exercise>> result = {};
+
+    for (final muscle in selectedMuscles) {
+      final mLower = muscle.toLowerCase();
+      final matched = allExercises.where((e) {
         final target = e.targetMuscle.toLowerCase();
-        final isLegsMatch = selectedLower.contains('legs') &&
+        final isLegsMatch = mLower == 'legs' &&
             (target == 'legs' ||
                 target == 'quads' ||
                 target == 'hamstrings' ||
                 target == 'glutes' ||
                 target == 'calves');
-        final isTargetMatch = selectedLower.contains(target);
-        final isSecondaryMatch = e.secondaryMuscles.any((sm) => selectedLower.contains(sm.toLowerCase()));
+        final isMatch = isLegsMatch || target == mLower;
+        if (!isMatch) return false;
 
-        return isLegsMatch || isTargetMatch || isSecondaryMatch;
+        if (query.isNotEmpty) {
+          final matchesQuery = e.name.toLowerCase().contains(query) ||
+              e.equipment.toLowerCase().contains(query) ||
+              e.secondaryMuscles.any((sm) => sm.toLowerCase().contains(query));
+          if (!matchesQuery) return false;
+        }
+
+        return true;
       }).toList();
+
+      if (matched.isNotEmpty) {
+        result[muscle] = matched;
+      }
     }
 
-    if (query.isNotEmpty) {
-      list = list.where((e) {
-        return e.name.toLowerCase().contains(query) ||
-            e.targetMuscle.toLowerCase().contains(query) ||
-            e.equipment.toLowerCase().contains(query);
-      }).toList();
-    }
+    return result;
+  }
 
+  /// Flat list of exercises strictly for the selected body parts on the current day.
+  List<Exercise> get filteredExercisesForCurrentDay {
+    final map = categorizedExercisesForCurrentDay;
+    final List<Exercise> list = [];
+    for (final items in map.values) {
+      list.addAll(items);
+    }
     return list;
   }
 

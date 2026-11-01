@@ -117,44 +117,16 @@ class RoutineSelectorSheet extends StatelessWidget {
               final routines = controller.allRoutines.toList();
 
               if (routines.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSizes.xl),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.dumbbell, size: 48, color: s.secondary.withValues(alpha: 0.5)),
-                        const SizedBox(height: AppSizes.md),
-                        Text(
-                          'No Workout Routines',
-                          style: GoogleFonts.manrope(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: s.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'You haven\'t created any workout splits yet.\nTap below to build your first routine.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.manrope(
-                            fontSize: 13,
-                            color: s.secondary,
-                          ),
-                        ),
-                        const SizedBox(height: AppSizes.lg),
-                        AppButton.primary(
-                          text: 'Create Routine',
-                          icon: LucideIcons.plus,
-                          size: AppButtonSize.sm,
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Get.toNamed(Routes.addRoutine);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                return AppEmptyState(
+                  isDark: isDark,
+                  icon: LucideIcons.dumbbell,
+                  title: 'No Workout Routines',
+                  subtitle: 'You haven\'t created any workout splits yet.\nTap below to build your first routine.',
+                  actionLabel: 'Create Routine',
+                  onAction: () {
+                    Navigator.pop(context);
+                    Get.toNamed(Routes.addRoutine);
+                  },
                 );
               }
 

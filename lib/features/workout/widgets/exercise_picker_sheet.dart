@@ -52,7 +52,14 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedMuscle = widget.initialMuscle ?? 'All';
+    final initial = widget.initialMuscle?.trim() ?? 'All';
+    _selectedMuscle = WorkoutService.muscleGroups.firstWhere(
+      (m) => m.toLowerCase() == initial.toLowerCase(),
+      orElse: () => WorkoutService.muscleGroups.firstWhere(
+        (m) => initial.toLowerCase().contains(m.toLowerCase()) && m != 'All',
+        orElse: () => 'All',
+      ),
+    );
     _loadExercises();
   }
 
@@ -260,22 +267,11 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _exercises.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.dumbbell, size: 36, color: s.tertiary),
-                          const SizedBox(height: 8),
-                          Text(
-                            'No exercises found',
-                            style: GoogleFonts.manrope(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: s.secondary,
-                            ),
-                          ),
-                        ],
-                      ),
+                  ? AppEmptyState(
+                      isDark: isDark,
+                      icon: LucideIcons.dumbbell,
+                      title: 'No exercises found',
+                      subtitle: 'Try adjusting your search query or muscle filter.',
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.all(AppSizes.screenPadding),
@@ -368,121 +364,140 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   Widget _buildConfigView(AppStyle s, bool isDark) {
     final ex = _configuringExercise!;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSizes.screenPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Selected Exercise Header Card
-          Container(
-            padding: const EdgeInsets.all(AppSizes.md),
-            decoration: BoxDecoration(
-              color: s.brandSoft,
-              borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-              border: Border.all(color: s.brand.withValues(alpha: 0.3)),
-            ),
-            child: Row(
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.screenPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Selected Exercise Header Card
                 Container(
-                  width: 48,
-                  height: 48,
+                  padding: const EdgeInsets.all(AppSizes.md),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceDark : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: s.brandSoft,
+                    borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                    border: Border.all(color: s.brand.withValues(alpha: 0.3)),
                   ),
-                  child: Icon(_iconForMuscle(ex.targetMuscle), size: 24, color: s.brand),
-                ),
-                const SizedBox(width: AppSizes.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        ex.name,
-                        style: GoogleFonts.manrope(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: s.primary,
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.surfaceDark : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Icon(_iconForMuscle(ex.targetMuscle), size: 24, color: s.brand),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'Target: ${ex.targetMuscle} · ${ex.equipment}',
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          color: s.secondary,
+                      const SizedBox(width: AppSizes.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ex.name,
+                              style: GoogleFonts.manrope(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: s.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'Target: ${ex.targetMuscle} · ${ex.equipment}',
+                              style: GoogleFonts.manrope(
+                                fontSize: 12,
+                                color: s.secondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                const SizedBox(height: AppSizes.xl),
+
+                // Sets Stepper
+                _stepperRow(
+                  title: 'Number of Sets',
+                  valueDisplay: '$_sets sets',
+                  onMinus: () {
+                    if (_sets > 1) setState(() => _sets--);
+                  },
+                  onPlus: () {
+                    setState(() => _sets++);
+                  },
+                  s: s,
+                  isDark: isDark,
+                ),
+
+                const SizedBox(height: AppSizes.md),
+
+                // Reps Stepper
+                _stepperRow(
+                  title: 'Target Reps per Set',
+                  valueDisplay: '$_reps reps',
+                  onMinus: () {
+                    if (_reps > 1) setState(() => _reps--);
+                  },
+                  onPlus: () {
+                    setState(() => _reps++);
+                  },
+                  s: s,
+                  isDark: isDark,
+                ),
+
+                const SizedBox(height: AppSizes.md),
+
+                // Starting Weight Stepper
+                _stepperRow(
+                  title: 'Starting Weight',
+                  valueDisplay: '${_weight > 0 ? _weight.toStringAsFixed(1) : "Bodyweight"} ${_weight > 0 ? "kg" : ""}',
+                  onMinus: () {
+                    if (_weight >= 2.5) {
+                      setState(() => _weight -= 2.5);
+                    } else {
+                      setState(() => _weight = 0.0);
+                    }
+                  },
+                  onPlus: () {
+                    setState(() => _weight += 2.5);
+                  },
+                  s: s,
+                  isDark: isDark,
+                ),
+
+                const SizedBox(height: AppSizes.lg),
               ],
             ),
           ),
+        ),
 
-          const SizedBox(height: AppSizes.xl),
-
-          // Sets Stepper
-          _stepperRow(
-            title: 'Number of Sets',
-            valueDisplay: '$_sets sets',
-            onMinus: () {
-              if (_sets > 1) setState(() => _sets--);
-            },
-            onPlus: () {
-              setState(() => _sets++);
-            },
-            s: s,
-            isDark: isDark,
+        // Pinned Bottom Action Button
+        Container(
+          padding: EdgeInsets.fromLTRB(
+            AppSizes.screenPadding,
+            AppSizes.sm,
+            AppSizes.screenPadding,
+            MediaQuery.of(context).padding.bottom + AppSizes.md,
           ),
-
-          const SizedBox(height: AppSizes.md),
-
-          // Reps Stepper
-          _stepperRow(
-            title: 'Target Reps per Set',
-            valueDisplay: '$_reps reps',
-            onMinus: () {
-              if (_reps > 1) setState(() => _reps--);
-            },
-            onPlus: () {
-              setState(() => _reps++);
-            },
-            s: s,
-            isDark: isDark,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            border: Border(top: BorderSide(color: s.border.withValues(alpha: 0.7))),
           ),
-
-          const SizedBox(height: AppSizes.md),
-
-          // Starting Weight Stepper
-          _stepperRow(
-            title: 'Starting Weight',
-            valueDisplay: '${_weight > 0 ? _weight.toStringAsFixed(1) : "Bodyweight"} ${_weight > 0 ? "kg" : ""}',
-            onMinus: () {
-              if (_weight >= 2.5) {
-                setState(() => _weight -= 2.5);
-              } else {
-                setState(() => _weight = 0.0);
-              }
-            },
-            onPlus: () {
-              setState(() => _weight += 2.5);
-            },
-            s: s,
-            isDark: isDark,
-          ),
-
-          const SizedBox(height: AppSizes.xxl),
-
-          AppButton.primary(
+          child: AppButton.primary(
             text: 'Add to Workout Day',
             icon: LucideIcons.plus,
             size: AppButtonSize.lg,
             fullWidth: true,
             onPressed: _confirmAdd,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

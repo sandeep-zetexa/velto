@@ -200,24 +200,28 @@ class DietView extends StatelessWidget {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        // 1. Small Date at top (e.g. 29, 30)
                                         Text(
-                                          dayShort,
+                                          dateNum,
                                           style: GoogleFonts.manrope(
                                             fontSize: 11,
                                             fontWeight: isSelected
                                                 ? FontWeight.w700
                                                 : (isToday ? FontWeight.w700 : FontWeight.w600),
                                             color: isSelected
-                                                ? Colors.white.withValues(alpha: 0.9)
+                                                ? Colors.white.withValues(alpha: 0.85)
                                                 : (isToday ? s.brand : s.secondary),
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 3),
+
+                                        // 2. Main Day below (e.g. Mon, Tue)
                                         Text(
-                                          dateNum,
+                                          dayShort,
                                           style: GoogleFonts.manrope(
-                                            fontSize: 15,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.2,
                                             color: isSelected
                                                 ? Colors.white
                                                 : (isToday ? s.brand : s.primary),
