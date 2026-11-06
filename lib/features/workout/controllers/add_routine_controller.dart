@@ -176,32 +176,28 @@ class AddRoutineController extends GetxController {
     return list;
   }
 
-  void addExerciseToCurrentDay(
+  Future<void> addExerciseToCurrentDay(
     Exercise exercise, {
     int? targetSets,
     int? targetReps,
     double? targetWeight,
-  }) {
+  }) async {
     final cur = currentDay;
-    final newItem = WorkoutExerciseItem.create(
-      exercise: exercise,
-      targetSets: targetSets,
-      targetReps: targetReps,
-      targetWeight: targetWeight,
-    );
+    final useLastSession = targetSets == null && targetReps == null && targetWeight == null;
+    final seeded = useLastSession
+        ? await _workoutService.rememberOrCreate(exercise)
+        : WorkoutExerciseItem.create(
+            exercise: exercise,
+            targetSets: targetSets,
+            targetReps: targetReps,
+            targetWeight: targetWeight,
+          );
 
-    final updatedExercises = List<WorkoutExerciseItem>.from(cur.exercises)..add(newItem);
-
-    // Auto-add exercise muscle to current day if not present
-    final updatedMuscles = List<String>.from(cur.muscles)
-      ..removeWhere((m) => m.toLowerCase().contains('rest'));
-    if (!updatedMuscles.contains(exercise.targetMuscle)) {
-      updatedMuscles.add(exercise.targetMuscle);
-    }
+    final updatedExercises = List<WorkoutExerciseItem>.from(cur.exercises)..add(seeded);
 
     days[selectedDayIndex.value] = cur.copyWith(
       exercises: updatedExercises,
-      muscles: updatedMuscles,
+      muscles: _musclesFor(updatedExercises),
       isRestDay: false,
     );
   }
@@ -210,8 +206,21 @@ class AddRoutineController extends GetxController {
     final cur = currentDay;
     if (index >= 0 && index < cur.exercises.length) {
       final updated = List<WorkoutExerciseItem>.from(cur.exercises)..removeAt(index);
-      days[selectedDayIndex.value] = cur.copyWith(exercises: updated);
+      days[selectedDayIndex.value] = cur.copyWith(
+        exercises: updated,
+        muscles: updated.isEmpty ? const [] : _musclesFor(updated),
+      );
     }
+  }
+
+  List<String> _musclesFor(List<WorkoutExerciseItem> exercises) {
+    final muscles = <String>[];
+    for (final item in exercises) {
+      final muscle = item.exercise.targetMuscle.trim();
+      if (muscle.isEmpty || muscles.contains(muscle)) continue;
+      muscles.add(muscle);
+    }
+    return muscles;
   }
 
   void updateExerciseSets(int index, int sets) {

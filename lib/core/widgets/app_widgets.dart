@@ -190,12 +190,10 @@ class AppEmptyState extends StatelessWidget {
             // Optional action button
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AppSizes.lg),
-              AppButton(
+              AppButton.primary(
                 text: actionLabel!,
                 onPressed: onAction,
-                size: AppButtonSize.sm,
-                customBgColor: resolvedIconBg,
-                customTextColor: resolvedIconColor,
+                size: AppButtonSize.md,
               ),
             ],
           ],

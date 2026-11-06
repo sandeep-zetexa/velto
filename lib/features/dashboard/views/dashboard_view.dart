@@ -8,6 +8,7 @@ import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/dashboard/controllers/dashboard_controller.dart';
+import 'package:velto/features/dashboard/widgets/session_muscle_map.dart';
 import 'package:velto/features/home/controllers/home_controller.dart';
 
 class DashboardView extends GetView<DashboardController> {
@@ -379,28 +380,24 @@ class DashboardView extends GetView<DashboardController> {
                             children: [
                               Row(
                                 children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: controller.isRestDayToday
-                                          ? (isDark
-                                              ? AppColors.greenSoftDark
-                                              : AppColors.greenSoft)
-                                          : s.brandSoft,
-                                      borderRadius: BorderRadius.circular(11),
+                                  if (controller.isRestDayToday) ...[
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? AppColors.greenSoftDark
+                                            : AppColors.greenSoft,
+                                        borderRadius: BorderRadius.circular(11),
+                                      ),
+                                      child: const Icon(
+                                        LucideIcons.sparkles,
+                                        size: 20,
+                                        color: AppColors.green,
+                                      ),
                                     ),
-                                    child: Icon(
-                                      controller.isRestDayToday
-                                          ? LucideIcons.sparkles
-                                          : LucideIcons.dumbbell,
-                                      size: 20,
-                                      color: controller.isRestDayToday
-                                          ? AppColors.green
-                                          : s.brand,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppSizes.md),
+                                    const SizedBox(width: AppSizes.md),
+                                  ],
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,6 +446,22 @@ class DashboardView extends GetView<DashboardController> {
                                     ),
                                 ],
                               ),
+                              if (!controller.isRestDayToday) ...[
+                                const SizedBox(height: AppSizes.md),
+                                SessionMuscleMap(
+                                  muscles: SessionMuscleMap.fromLabels(
+                                    controller.todayMuscleLabels,
+                                  ),
+                                  accent: s.brand,
+                                  body: isDark
+                                      ? const Color(0xFF2A2E38)
+                                      : const Color(0xFFE2E8F0),
+                                  outline: isDark
+                                      ? const Color(0xFF3D4454)
+                                      : const Color(0xFFCBD5E1),
+                                  caption: s.tertiary,
+                                ),
+                              ],
                               if (!controller.isRestDayToday &&
                                   controller.todaySetsTotal > 0) ...[
                                 const SizedBox(height: AppSizes.md),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:velto/core/services/local_storage_service.dart';
 import 'package:velto/features/workout/models/daily_workout_log.dart';
 import 'package:velto/features/workout/models/exercise.dart';
+import 'package:velto/features/workout/models/exercise_volume.dart';
 import 'package:velto/features/workout/models/routine_day.dart';
 import 'package:velto/features/workout/models/workout_routine.dart';
 import 'package:velto/features/workout/services/workout_service.dart';
@@ -16,6 +17,11 @@ class WorkoutController extends GetxController {
   final Rx<DateTime> selectedDate = Rx<DateTime>(DateTime.now());
   final Rx<DailyWorkoutLog?> currentDailyLog = Rx<DailyWorkoutLog?>(null);
   final RxBool isLoading = false.obs;
+
+  /// Previous session volume for each exercise on the open day.
+  /// Keyed by exercise id. The current date is never included.
+  final RxMap<String, ExerciseVolumeRecord> previousVolume =
+      <String, ExerciseVolumeRecord>{}.obs;
 
   /// Day index based on current system day (Monday = 0, Tuesday = 1, ... Sunday = 6)
   int get todayDayIndex {
@@ -85,16 +91,16 @@ class WorkoutController extends GetxController {
       final routine = activeRoutine.value;
       if (routine != null && routine.days.isNotEmpty) {
         final day = routine.days[selectedDayIndex.value.clamp(0, routine.days.length - 1)];
-        currentDailyLog.value = DailyWorkoutLog.fromRoutineDay(
-          date: dateKey,
-          routineId: routine.id,
-          routineName: routine.name,
+        currentDailyLog.value = await _logSeededFromRoutine(
+          dateKey: dateKey,
+          routine: routine,
           day: day,
         );
       } else {
         currentDailyLog.value = null;
       }
     }
+    await _loadPreviousVolumes();
   }
 
   Future<void> switchActiveRoutine(String routineId) async {
@@ -107,10 +113,9 @@ class WorkoutController extends GetxController {
       final routine = activeRoutine.value;
       if (routine != null && routine.days.isNotEmpty) {
         final day = routine.days[selectedDayIndex.value.clamp(0, routine.days.length - 1)];
-        final newLog = DailyWorkoutLog.fromRoutineDay(
-          date: selectedDateKey,
-          routineId: routine.id,
-          routineName: routine.name,
+        final newLog = await _logSeededFromRoutine(
+          dateKey: selectedDateKey,
+          routine: routine,
           day: day,
         );
         currentDailyLog.value = newLog;
@@ -405,29 +410,36 @@ class WorkoutController extends GetxController {
 
   Future<void> addExerciseToCurrentDay(
     Exercise exercise, {
-    int sets = 3,
-    int reps = 10,
-    double weight = 20.0,
+    int? sets,
+    int? reps,
+    double? weight,
   }) async {
     final routine = activeRoutine.value;
     final day = selectedDay;
     if (day == null) return;
 
-    final newItem = WorkoutExerciseItem.create(
-      exercise: exercise,
-      targetSets: sets,
-      targetReps: reps,
-      targetWeight: weight,
-    );
+    final newItem = (sets == null && reps == null && weight == null)
+        ? await _workoutService.rememberOrCreate(exercise, beforeDate: selectedDateKey)
+        : WorkoutExerciseItem.create(
+            exercise: exercise,
+            targetSets: sets,
+            targetReps: reps,
+            targetWeight: weight,
+          );
 
     final updatedExercises = List<WorkoutExerciseItem>.from(day.exercises)..add(newItem);
-    await _saveCurrentDayExercises(updatedExercises);
+    final muscles = _musclesFor(updatedExercises, fallback: day.muscles);
+    await _saveCurrentDayExercises(updatedExercises, muscles: muscles);
 
     _hasUserToggledExpansion = true;
     expandedExerciseIds.add(newItem.id);
 
     if (routine != null) {
-      final updatedDay = day.copyWith(exercises: updatedExercises, isRestDay: false);
+      final updatedDay = day.copyWith(
+        exercises: updatedExercises,
+        muscles: muscles,
+        isRestDay: false,
+      );
       final updatedDays = List<RoutineDay>.from(routine.days);
       final dayIdx = routine.days.indexWhere(
         (d) => d.dayName.toLowerCase() == day.dayName.toLowerCase(),
@@ -528,7 +540,43 @@ class WorkoutController extends GetxController {
     }
   }
 
-  Future<void> _saveCurrentDayExercises(List<WorkoutExerciseItem> exercises) async {
+  Future<DailyWorkoutLog> _logSeededFromRoutine({
+    required String dateKey,
+    required WorkoutRoutine routine,
+    required RoutineDay day,
+  }) async {
+    final base = DailyWorkoutLog.fromRoutineDay(
+      date: dateKey,
+      routineId: routine.id,
+      routineName: routine.name,
+      day: day,
+    );
+    final exercises = <WorkoutExerciseItem>[];
+    for (final item in base.exercises) {
+      exercises.add(
+        await _workoutService.withRememberedSets(item, beforeDate: dateKey),
+      );
+    }
+    return base.copyWith(exercises: exercises);
+  }
+
+  List<String> _musclesFor(
+    List<WorkoutExerciseItem> exercises, {
+    List<String> fallback = const [],
+  }) {
+    final muscles = <String>[];
+    for (final item in exercises) {
+      final muscle = item.exercise.targetMuscle.trim();
+      if (muscle.isEmpty || muscles.contains(muscle)) continue;
+      muscles.add(muscle);
+    }
+    return muscles.isEmpty ? fallback : muscles;
+  }
+
+  Future<void> _saveCurrentDayExercises(
+    List<WorkoutExerciseItem> exercises, {
+    List<String>? muscles,
+  }) async {
     final routine = activeRoutine.value;
     final day = selectedDay;
     if (day == null) return;
@@ -538,13 +586,43 @@ class WorkoutController extends GetxController {
       routineId: routine?.id ?? '',
       routineName: routine?.name ?? 'Workout Routine',
       dayName: day.dayName,
-      muscles: day.muscles,
+      muscles: muscles ?? day.muscles,
       isRestDay: false,
       exercises: exercises,
     );
 
     currentDailyLog.value = updatedLog;
     await _workoutService.saveDailyLog(updatedLog);
+    await _syncExerciseVolumes(exercises);
+  }
+
+  /// Writes today's volume row for every exercise on the open day.
+  /// A day with no completed sets drops that exercise's row for the date.
+  Future<void> _syncExerciseVolumes(List<WorkoutExerciseItem> exercises) async {
+    for (final item in exercises) {
+      final record = ExerciseVolumeRecord.fromSets(
+        exerciseId: item.exercise.id,
+        date: selectedDateKey,
+        sets: item.sets,
+      );
+      await _workoutService.upsertExerciseVolume(record);
+    }
+  }
+
+  Future<void> _loadPreviousVolumes() async {
+    final exercises = currentDailyLog.value?.exercises ?? const <WorkoutExerciseItem>[];
+    final next = <String, ExerciseVolumeRecord>{};
+    final seen = <String>{};
+    for (final item in exercises) {
+      final exerciseId = item.exercise.id;
+      if (!seen.add(exerciseId)) continue;
+      final previous = await _workoutService.previousExerciseVolume(
+        exerciseId: exerciseId,
+        beforeDate: selectedDateKey,
+      );
+      if (previous != null) next[exerciseId] = previous;
+    }
+    previousVolume.assignAll(next);
   }
 
   Future<void> _refreshActiveRoutine() async {

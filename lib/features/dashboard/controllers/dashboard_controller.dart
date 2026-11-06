@@ -87,6 +87,28 @@ class DashboardController extends GetxController {
     return routine.days[idx.clamp(0, routine.days.length - 1)].musclesDisplay;
   }
 
+  /// Muscle words for today's session, from the logged exercises and the day plan.
+  List<String> get todayMuscleLabels {
+    final raw = <String>[];
+    final log = todayWorkout.value;
+    if (log != null) {
+      raw.addAll(log.muscles);
+      for (final item in log.exercises) {
+        raw.add(item.exercise.targetMuscle);
+      }
+      return raw;
+    }
+    final routine = activeRoutine.value;
+    if (routine == null || routine.days.isEmpty) return raw;
+    final idx = DateTime.now().weekday - 1;
+    final day = routine.days[idx.clamp(0, routine.days.length - 1)];
+    raw.addAll(day.muscles);
+    for (final item in day.exercises) {
+      raw.add(item.exercise.targetMuscle);
+    }
+    return raw;
+  }
+
   String get todayRoutineName =>
       todayWorkout.value?.routineName ??
       activeRoutine.value?.name ??

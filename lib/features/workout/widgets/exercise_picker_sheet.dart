@@ -6,7 +6,6 @@ import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/workout/models/exercise.dart';
 import 'package:velto/features/workout/services/workout_service.dart';
-
 class ExercisePickerSheet extends StatefulWidget {
   final String? initialMuscle;
   final Function(Exercise exercise, int sets, int reps, double weight) onExerciseSelected;
@@ -43,11 +42,6 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   String _searchQuery = '';
   List<Exercise> _exercises = [];
   bool _isLoading = true;
-
-  Exercise? _configuringExercise;
-  int _sets = 3;
-  int _reps = 10;
-  double _weight = 20.0;
 
   @override
   void initState() {
@@ -90,46 +84,8 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   }
 
   void _selectExercise(Exercise ex) {
-    setState(() {
-      _configuringExercise = ex;
-      _sets = ex.defaultSets;
-      _reps = ex.defaultReps;
-      _weight = ex.defaultWeight;
-    });
-  }
-
-  void _confirmAdd() {
-    if (_configuringExercise != null) {
-      widget.onExerciseSelected(
-        _configuringExercise!,
-        _sets,
-        _reps,
-        _weight,
-      );
-      Navigator.pop(context);
-    }
-  }
-
-  IconData _iconForMuscle(String muscle) {
-    switch (muscle.toLowerCase()) {
-      case 'chest':
-        return LucideIcons.shield;
-      case 'back':
-        return LucideIcons.layers;
-      case 'shoulders':
-        return LucideIcons.triangle;
-      case 'biceps':
-      case 'triceps':
-        return LucideIcons.dumbbell;
-      case 'legs':
-        return LucideIcons.footprints;
-      case 'abs':
-        return LucideIcons.activity;
-      case 'cardio':
-        return LucideIcons.zap;
-      default:
-        return LucideIcons.dumbbell;
-    }
+    widget.onExerciseSelected(ex, ex.defaultSets, ex.defaultReps, ex.defaultWeight);
+    Navigator.pop(context);
   }
 
   @override
@@ -164,30 +120,23 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding, vertical: AppSizes.xs),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  _configuringExercise == null ? 'Select Exercise' : 'Configure Sets & Weight',
-                  style: GoogleFonts.manrope(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: s.primary,
-                    letterSpacing: -0.3,
+                Expanded(
+                  child: Text(
+                    'Select Exercise',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.manrope(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: s.primary,
+                      letterSpacing: -0.3,
+                    ),
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    if (_configuringExercise != null) {
-                      setState(() => _configuringExercise = null);
-                    } else {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: Icon(
-                    _configuringExercise != null ? LucideIcons.arrow_left : LucideIcons.x,
-                    color: s.secondary,
-                    size: 20,
-                  ),
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(LucideIcons.x, color: s.secondary, size: 20),
                 ),
               ],
             ),
@@ -195,11 +144,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 
           const Divider(height: 1),
 
-          Expanded(
-            child: _configuringExercise == null
-                ? _buildExerciseCatalog(s, isDark)
-                : _buildConfigView(s, isDark),
-          ),
+          Expanded(child: _buildExerciseCatalog(s, isDark)),
         ],
       ),
     );
@@ -291,20 +236,6 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                             ),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: s.brandSoft,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(
-                                    _iconForMuscle(ex.targetMuscle),
-                                    size: 20,
-                                    color: s.brand,
-                                  ),
-                                ),
-                                const SizedBox(width: AppSizes.md),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,211 +289,6 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                     ),
         ),
       ],
-    );
-  }
-
-  Widget _buildConfigView(AppStyle s, bool isDark) {
-    final ex = _configuringExercise!;
-
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.screenPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Selected Exercise Header Card
-                Container(
-                  padding: const EdgeInsets.all(AppSizes.md),
-                  decoration: BoxDecoration(
-                    color: s.brandSoft,
-                    borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-                    border: Border.all(color: s.brand.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.surfaceDark : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(_iconForMuscle(ex.targetMuscle), size: 24, color: s.brand),
-                      ),
-                      const SizedBox(width: AppSizes.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              ex.name,
-                              style: GoogleFonts.manrope(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: s.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Target: ${ex.targetMuscle} · ${ex.equipment}',
-                              style: GoogleFonts.manrope(
-                                fontSize: 12,
-                                color: s.secondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: AppSizes.xl),
-
-                // Sets Stepper
-                _stepperRow(
-                  title: 'Number of Sets',
-                  valueDisplay: '$_sets sets',
-                  onMinus: () {
-                    if (_sets > 1) setState(() => _sets--);
-                  },
-                  onPlus: () {
-                    setState(() => _sets++);
-                  },
-                  s: s,
-                  isDark: isDark,
-                ),
-
-                const SizedBox(height: AppSizes.md),
-
-                // Reps Stepper
-                _stepperRow(
-                  title: 'Target Reps per Set',
-                  valueDisplay: '$_reps reps',
-                  onMinus: () {
-                    if (_reps > 1) setState(() => _reps--);
-                  },
-                  onPlus: () {
-                    setState(() => _reps++);
-                  },
-                  s: s,
-                  isDark: isDark,
-                ),
-
-                const SizedBox(height: AppSizes.md),
-
-                // Starting Weight Stepper
-                _stepperRow(
-                  title: 'Starting Weight',
-                  valueDisplay: '${_weight > 0 ? _weight.toStringAsFixed(1) : "Bodyweight"} ${_weight > 0 ? "kg" : ""}',
-                  onMinus: () {
-                    if (_weight >= 2.5) {
-                      setState(() => _weight -= 2.5);
-                    } else {
-                      setState(() => _weight = 0.0);
-                    }
-                  },
-                  onPlus: () {
-                    setState(() => _weight += 2.5);
-                  },
-                  s: s,
-                  isDark: isDark,
-                ),
-
-                const SizedBox(height: AppSizes.lg),
-              ],
-            ),
-          ),
-        ),
-
-        // Pinned Bottom Action Button
-        Container(
-          padding: EdgeInsets.fromLTRB(
-            AppSizes.screenPadding,
-            AppSizes.sm,
-            AppSizes.screenPadding,
-            MediaQuery.of(context).padding.bottom + AppSizes.md,
-          ),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceDark : Colors.white,
-            border: Border(top: BorderSide(color: s.border.withValues(alpha: 0.7))),
-          ),
-          child: AppButton.primary(
-            text: 'Add to Workout Day',
-            icon: LucideIcons.plus,
-            size: AppButtonSize.lg,
-            fullWidth: true,
-            onPressed: _confirmAdd,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _stepperRow({
-    required String title,
-    required String valueDisplay,
-    required VoidCallback onMinus,
-    required VoidCallback onPlus,
-    required AppStyle s,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSizes.md, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark2 : AppColors.bgLight,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        border: Border.all(color: s.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.manrope(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: s.primary,
-            ),
-          ),
-          Row(
-            children: [
-              IconButton(
-                onPressed: onMinus,
-                icon: const Icon(LucideIcons.minus, size: 16),
-                style: IconButton.styleFrom(
-                  backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
-                  padding: const EdgeInsets.all(6),
-                  minimumSize: const Size(32, 32),
-                ),
-              ),
-              Container(
-                constraints: const BoxConstraints(minWidth: 80),
-                alignment: Alignment.center,
-                child: Text(
-                  valueDisplay,
-                  style: GoogleFonts.manrope(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: s.primary,
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: onPlus,
-                icon: const Icon(LucideIcons.plus, size: 16),
-                style: IconButton.styleFrom(
-                  backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
-                  padding: const EdgeInsets.all(6),
-                  minimumSize: const Size(32, 32),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 

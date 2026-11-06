@@ -33,6 +33,7 @@ class LocalStorageService {
   static const String _keyWorkoutDailyLogs = 'velto_workout_daily_logs';
   static const String _keyCustomMeals = 'velto_custom_meals_minimal';
   static const String _keyDietDailyLogs = 'velto_diet_daily_logs';
+  static const String _keyExerciseVolume = 'velto_exercise_volume';
 
   /// Helper to convert DateTime to ISO date key: "yyyy-MM-dd"
   static String formatDateKey(DateTime date) {
@@ -182,6 +183,42 @@ class LocalStorageService {
     try {
       final p = await prefs;
       if (p != null) await p.setString(_keyDietDailyLogs, encoded);
+    } catch (_) {}
+  }
+
+  // ── Exercise volume (one row per exercise per day) ────────────────────────
+
+  /// Sessions keyed by exercise id. Each list is that exercise's history.
+  Future<Map<String, List<Map<String, dynamic>>>> getExerciseVolumeTable() async {
+    String? jsonStr;
+    try {
+      final p = await prefs;
+      if (p != null) jsonStr = p.getString(_keyExerciseVolume);
+    } catch (_) {}
+    jsonStr ??= _memoryStore[_keyExerciseVolume];
+
+    if (jsonStr == null || jsonStr.isEmpty) return {};
+    try {
+      final raw = jsonDecode(jsonStr) as Map<String, dynamic>;
+      return raw.map((exerciseId, rows) {
+        final list = (rows as List<dynamic>)
+            .map((row) => Map<String, dynamic>.from(row as Map))
+            .toList();
+        return MapEntry(exerciseId, list);
+      });
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> saveExerciseVolumeTable(
+    Map<String, List<Map<String, dynamic>>> table,
+  ) async {
+    final encoded = jsonEncode(table);
+    _memoryStore[_keyExerciseVolume] = encoded;
+    try {
+      final p = await prefs;
+      if (p != null) await p.setString(_keyExerciseVolume, encoded);
     } catch (_) {}
   }
 

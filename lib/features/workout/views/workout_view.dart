@@ -8,11 +8,11 @@ import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
 import 'package:velto/features/workout/controllers/workout_controller.dart';
 import 'package:velto/features/workout/models/exercise.dart';
+import 'package:velto/features/workout/models/exercise_volume.dart';
 import 'package:velto/features/workout/models/routine_day.dart';
 import 'package:velto/features/workout/models/workout_routine.dart';
 import 'package:velto/features/workout/services/workout_service.dart';
 import 'package:velto/features/workout/widgets/exercise_picker_sheet.dart';
-import 'package:velto/features/workout/widgets/exercise_svg_icon.dart';
 import 'package:velto/features/workout/widgets/routine_selector_sheet.dart';
 
 class WorkoutView extends StatelessWidget {
@@ -585,24 +585,10 @@ class WorkoutView extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                                   child: Row(
                                     children: [
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: isAllDone
-                                              ? (isDark ? AppColors.greenSoftDark : AppColors.greenSoft)
-                                              : s.brandSoft,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: isAllDone
-                                            ? const Icon(LucideIcons.check, size: 18, color: AppColors.green)
-                                            : ExerciseSvgIcon(
-                                                exercise: item.exercise,
-                                                size: 18,
-                                                color: s.brand,
-                                              ),
-                                      ),
-                                      const SizedBox(width: AppSizes.md),
+                                      if (isAllDone) ...[
+                                        const Icon(LucideIcons.check, size: 16, color: AppColors.green),
+                                        const SizedBox(width: 8),
+                                      ],
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,41 +601,48 @@ class WorkoutView extends StatelessWidget {
                                                 color: s.primary,
                                               ),
                                             ),
-                                            const SizedBox(height: 3),
+                                            const SizedBox(height: 2),
                                             Row(
                                               children: [
-                                                _badge(item.exercise.targetMuscle, s.brand, s.brandSoft),
-                                                const SizedBox(width: 4),
-                                                _badge(
-                                                  '${item.sets.length} sets',
-                                                  s.secondary,
-                                                  isDark ? AppColors.surfaceDark2 : AppColors.bgLight,
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                                  decoration: BoxDecoration(
-                                                    color: isAllDone
-                                                        ? (isDark ? AppColors.greenSoftDark : AppColors.greenSoft)
-                                                        : (isDark ? AppColors.surfaceDark2 : AppColors.bgLight),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                    border: Border.all(
-                                                      color: isAllDone
-                                                          ? AppColors.green.withValues(alpha: 0.4)
-                                                          : s.border,
+                                                Flexible(
+                                                  child: Text(
+                                                    item.exercise.targetMuscle,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: GoogleFonts.manrope(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: s.brand,
                                                     ),
                                                   ),
-                                                  child: Text(
-                                                    '$completedCount/${item.sets.length} done',
+                                                ),
+                                                Text(
+                                                  '  ·  ${item.sets.length} sets',
+                                                  style: GoogleFonts.manrope(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: s.secondary,
+                                                  ),
+                                                ),
+                                                if (completedCount > 0)
+                                                  Text(
+                                                    '  ·  $completedCount done',
                                                     style: GoogleFonts.manrope(
-                                                      fontSize: 10,
+                                                      fontSize: 12,
                                                       fontWeight: FontWeight.w700,
                                                       color: isAllDone ? AppColors.green : s.secondary,
                                                     ),
                                                   ),
-                                                ),
                                               ],
                                             ),
+                                            if (!isExpanded)
+                                              _VolumeCompare(
+                                                item: item,
+                                                last: controller.previousVolume[item.exercise.id],
+                                                s: s,
+                                                isDark: isDark,
+                                                compact: true,
+                                              ),
                                           ],
                                         ),
                                       ),
@@ -689,6 +682,12 @@ class WorkoutView extends StatelessWidget {
                                         const SizedBox(height: AppSizes.sm + 2),
                                         Divider(height: 1, color: s.border.withValues(alpha: 0.6)),
                                         const SizedBox(height: AppSizes.sm),
+                                        _VolumeCompare(
+                                          item: item,
+                                          last: controller.previousVolume[item.exercise.id],
+                                          s: s,
+                                          isDark: isDark,
+                                        ),
 
                                         // Sets Section: Individual reps & weight for every set
                                         Column(
@@ -942,12 +941,7 @@ class WorkoutView extends StatelessWidget {
       context: context,
       initialMuscle: initialMuscle,
       onExerciseSelected: (Exercise exercise, int sets, int reps, double weight) async {
-        await controller.addExerciseToCurrentDay(
-          exercise,
-          sets: sets,
-          reps: reps,
-          weight: weight,
-        );
+        await controller.addExerciseToCurrentDay(exercise);
       },
     );
   }
@@ -1016,18 +1010,6 @@ class WorkoutView extends StatelessWidget {
   }
 
 
-  Widget _badge(String text, Color color, Color bg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
-      child: Text(
-        text,
-        style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: color),
-      ),
-    );
-  }
-
-
   void _confirmDeleteSchedule(BuildContext context, WorkoutController controller, WorkoutRoutine routine) {
     if (controller.allRoutines.length <= 1) {
       Get.snackbar(
@@ -1064,6 +1046,115 @@ class WorkoutView extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Shows this session's volume against the last time the exercise was logged.
+class _VolumeCompare extends StatelessWidget {
+  final WorkoutExerciseItem item;
+  final ExerciseVolumeRecord? last;
+  final AppStyle s;
+  final bool isDark;
+
+  final bool compact;
+
+  const _VolumeCompare({
+    required this.item,
+    required this.last,
+    required this.s,
+    required this.isDark,
+    this.compact = false,
+  });
+
+  int get _currentReps => item.sets.fold(0, (sum, set) => sum + set.reps);
+
+  @override
+  Widget build(BuildContext context) {
+    final current = _currentReps;
+    if (last == null && current == 0) return const SizedBox.shrink();
+
+    final delta = last == null ? null : current - last!.totalReps;
+    final hasProgress = last != null && current > 0;
+
+    late final String detail;
+    Color? deltaColor;
+    if (last == null) {
+      detail = 'Now $current reps';
+    } else if (current == 0) {
+      detail = 'Now 0 · last ${last!.totalReps}';
+    } else if (delta == 0) {
+      detail = 'Now $current · matched last time';
+    } else {
+      final sign = delta! > 0 ? '+' : '−';
+      detail = 'Now $current · last ${last!.totalReps} · $sign${delta.abs()}';
+      deltaColor = delta > 0 ? AppColors.green : AppColors.rose;
+    }
+
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 3),
+        child: Text(
+          detail,
+          style: GoogleFonts.manrope(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: deltaColor ?? s.secondary,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSizes.sm),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark2 : AppColors.bgLight,
+          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+          border: Border.all(color: s.border.withValues(alpha: 0.7)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hasProgress && delta != null && delta > 0
+                  ? LucideIcons.trending_up
+                  : hasProgress && delta != null && delta < 0
+                      ? LucideIcons.trending_down
+                      : LucideIcons.chart_column,
+              size: 14,
+              color: deltaColor ?? s.brand,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Volume',
+                    style: GoogleFonts.manrope(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: s.secondary,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    detail,
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: deltaColor ?? s.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

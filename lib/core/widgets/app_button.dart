@@ -278,18 +278,11 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
             if (widget.text != null) const SizedBox(width: 6),
           ],
           if (widget.text != null)
-            Flexible(
-              child: Text(
-                widget.text!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.manrope(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w700,
-                  color: fgColor,
-                  letterSpacing: -0.2,
-                ),
-              ),
+            _buttonLabel(
+              widget.text!,
+              fontSize: fontSize,
+              color: fgColor,
+              expand: widget.fullWidth,
             ),
           if (widget.trailingIcon != null) ...[
             if (widget.text != null) const SizedBox(width: 6),
@@ -343,6 +336,34 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
       onTap: _effectiveDisabled ? null : widget.onPressed,
       behavior: HitTestBehavior.opaque,
       child: widget.fullWidth ? SizedBox(width: double.infinity, child: button) : button,
+    );
+  }
+
+  Widget _buttonLabel(
+    String label, {
+    required double fontSize,
+    required Color color,
+    required bool expand,
+  }) {
+    final text = Text(
+      label,
+      maxLines: 1,
+      softWrap: false,
+      overflow: TextOverflow.visible,
+      style: GoogleFonts.manrope(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+        color: color,
+        letterSpacing: -0.2,
+      ),
+    );
+    if (!expand) return text;
+    return Flexible(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: text,
+      ),
     );
   }
 

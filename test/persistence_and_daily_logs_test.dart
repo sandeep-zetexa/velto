@@ -7,7 +7,9 @@ import 'package:velto/features/diet/models/meal_model.dart';
 import 'package:velto/features/diet/models/saved_meal.dart';
 import 'package:velto/features/diet/services/diet_service.dart';
 import 'package:velto/features/workout/controllers/workout_controller.dart';
+import 'package:velto/features/workout/models/daily_workout_log.dart';
 import 'package:velto/features/workout/models/exercise.dart';
+import 'package:velto/features/workout/models/exercise_volume.dart';
 import 'package:velto/features/workout/models/routine_day.dart';
 import 'package:velto/features/workout/models/workout_routine.dart';
 import 'package:velto/features/workout/services/workout_service.dart';
@@ -28,13 +30,11 @@ void main() {
       await dietService.fetchIngredientsApi();
     });
 
-    test('Exercises contain SVG vector data with placeholder fallback', () async {
+    test('Exercises declare a target muscle', () async {
       final exercises = await workoutService.fetchExercisesApi();
       expect(exercises.isNotEmpty, true);
       for (final ex in exercises) {
-        expect(ex.svg, isNotNull);
-        expect(ex.svg!.contains('<svg'), true);
-        expect(ex.svg!.contains('</svg>'), true);
+        expect(ex.targetMuscle, isNotEmpty);
       }
     });
 
@@ -287,6 +287,107 @@ void main() {
       expect(dietController.meals.any((m) => m.id == 'yesterday_lunch'), true);
       expect(dietController.meals.any((m) => m.id == 'today_breakfast'), false);
       expect(dietController.totalCalories, 550);
+    });
+
+    test('Exercise volume stores completed reps and compares with the previous session', () async {
+      const exerciseId = 'ex_volume_bench';
+      final first = ExerciseVolumeRecord.fromSets(
+        exerciseId: exerciseId,
+        date: '2026-11-01',
+        sets: const [
+          ExerciseSet(setNumber: 1, reps: 12, weight: 40, isCompleted: true),
+          ExerciseSet(setNumber: 2, reps: 12, weight: 40, isCompleted: true),
+          ExerciseSet(setNumber: 3, reps: 12, weight: 40, isCompleted: true),
+        ],
+      );
+      expect(first.totalReps, 36);
+      expect(first.completedSets, 3);
+      expect(first.volumeLoadKg, 1440);
+
+      await workoutService.upsertExerciseVolume(first);
+
+      final partial = ExerciseVolumeRecord.fromSets(
+        exerciseId: exerciseId,
+        date: '2026-11-06',
+        sets: const [
+          ExerciseSet(setNumber: 1, reps: 12, weight: 42.5, isCompleted: true),
+          ExerciseSet(setNumber: 2, reps: 10, weight: 42.5, isCompleted: true),
+          ExerciseSet(setNumber: 3, reps: 8, weight: 42.5, isCompleted: false),
+        ],
+      );
+      expect(partial.totalReps, 30);
+      await workoutService.upsertExerciseVolume(partial);
+
+      final previous = await workoutService.previousExerciseVolume(
+        exerciseId: exerciseId,
+        beforeDate: '2026-11-06',
+      );
+      expect(previous?.date, '2026-11-01');
+      expect(previous?.totalReps, 36);
+      expect(partial.totalReps - previous!.totalReps, -6);
+
+      final withExtraSet = ExerciseVolumeRecord.fromSets(
+        exerciseId: exerciseId,
+        date: '2026-11-06',
+        sets: const [
+          ExerciseSet(setNumber: 1, reps: 12, weight: 42.5, isCompleted: false),
+          ExerciseSet(setNumber: 2, reps: 12, weight: 42.5, isCompleted: false),
+          ExerciseSet(setNumber: 3, reps: 12, weight: 42.5, isCompleted: false),
+          ExerciseSet(setNumber: 4, reps: 12, weight: 42.5, isCompleted: false),
+        ],
+      );
+      expect(withExtraSet.totalReps, 48);
+
+      await workoutService.upsertExerciseVolume(
+        ExerciseVolumeRecord.fromSets(
+          exerciseId: exerciseId,
+          date: '2026-11-06',
+          sets: const [],
+        ),
+      );
+      final afterClear = await workoutService.previousExerciseVolume(
+        exerciseId: exerciseId,
+        beforeDate: '2026-11-07',
+      );
+      expect(afterClear?.date, '2026-11-01');
+      expect(afterClear?.totalReps, 36);
+    });
+
+    test('A later session starts from the last adjusted sets', () async {
+      final exercises = await workoutService.getExercises();
+      final bench = exercises.firstWhere((e) => e.id == 'ex_barbell_bench_press');
+
+      final firstTime = await workoutService.rememberOrCreate(bench);
+
+      await workoutService.saveDailyLog(
+        DailyWorkoutLog(
+          date: '2099-01-01',
+          routineId: 'r',
+          routineName: 'Test',
+          dayName: 'Monday',
+          muscles: const ['Chest'],
+          exercises: [
+            firstTime.copyWith(
+              targetSets: 3,
+              targetReps: 6,
+              targetWeight: 80,
+              sets: const [
+                ExerciseSet(setNumber: 1, reps: 6, weight: 80, isCompleted: true),
+                ExerciseSet(setNumber: 2, reps: 5, weight: 80, isCompleted: true),
+                ExerciseSet(setNumber: 3, reps: 4, weight: 75, isCompleted: true),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      final next = await workoutService.rememberOrCreate(bench, beforeDate: '2099-06-01');
+      expect(next.sets.length, 3);
+      expect(next.sets[0].reps, 6);
+      expect(next.sets[0].weight, 80);
+      expect(next.sets[2].reps, 4);
+      expect(next.sets[2].weight, 75);
+      expect(next.sets.every((set) => set.isCompleted == false), true);
     });
   });
 }

@@ -235,7 +235,12 @@ void main() {
 
       final exercises = await service.getExercises();
       final benchPress = exercises.firstWhere((e) => e.name == 'Barbell Bench Press');
-      controller.addExerciseToCurrentDay(benchPress, targetSets: 4, targetReps: 8, targetWeight: 75.0);
+      await controller.addExerciseToCurrentDay(
+        benchPress,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeight: 75.0,
+      );
 
       expect(controller.currentDay.exercises.length, 1);
       expect(controller.currentDay.exercises.first.exercise.name, 'Barbell Bench Press');
@@ -325,6 +330,11 @@ void main() {
     });
 
     testWidgets('AddRoutineView renders 7-day schedule and muscle selection without overflow', (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       Get.reset();
       Get.put(AddRoutineController());
 
@@ -338,41 +348,33 @@ void main() {
 
       // Verify title & schedule
       expect(find.text('Create Routine'), findsOneWidget);
-      expect(find.text('Schedule by Day'), findsOneWidget);
+      expect(find.text('Week'), findsOneWidget);
       expect(find.text('Mon'), findsOneWidget);
 
-      // Verify Rest Day and muscle chips are present
-      expect(find.text('Rest Day'), findsWidgets);
-      expect(find.text('Chest'), findsWidgets);
-      expect(find.text('Back'), findsWidgets);
-      expect(find.text('Legs'), findsWidgets);
+      expect(find.text('Rest day'), findsOneWidget);
 
       // Verify no default exercises are pre-added for newly created routine
       final controller = Get.find<AddRoutineController>();
       expect(controller.currentDay.exercises.isEmpty, true);
+      expect(controller.currentDay.muscles, isEmpty);
 
-      // Tap Chest chip -> exercises filtered for Chest
-      await tester.tap(find.text('Chest').first);
+      // Add an exercise. Its muscle is stored from the exercise itself.
+      await tester.ensureVisible(find.text('Add exercise'));
       await tester.pumpAndSettle();
-      expect(controller.currentDay.muscles.contains('Chest'), true);
-
-      // 1-tap Add an exercise
-      expect(find.text('Add'), findsWidgets);
-      await tester.ensureVisible(find.text('Add').first);
+      await tester.tap(find.text('Add exercise'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Add').first);
+      expect(find.text('Select Exercise'), findsOneWidget);
+      await tester.tap(find.text('Barbell Bench Press'));
       await tester.pumpAndSettle();
 
-      // Exercise should now be added to current day
+      expect(find.text('Select Exercise'), findsNothing);
       expect(controller.currentDay.exercises.length, 1);
-      expect(find.text('Added to Mon'), findsOneWidget);
-      expect(find.text('Added'), findsWidgets);
+      expect(controller.currentDay.muscles, ['Chest']);
+      expect(find.text('Barbell Bench Press'), findsOneWidget);
 
       // Verify action buttons
       expect(find.text('Save Routine'), findsOneWidget);
       expect(find.text('Save & Set Active'), findsOneWidget);
-
-      // Verify no RenderFlex overflow
       expect(tester.takeException(), isNull);
     });
 
@@ -390,15 +392,15 @@ void main() {
       // Initially Monday is not rest day
       expect(controller.currentDay.isRestDay, false);
 
-      // Tap Rest Day chip
-      await tester.tap(find.text('Rest Day'));
+      // Tap Rest day row
+      await tester.tap(find.text('Rest day'));
       await tester.pumpAndSettle();
 
       expect(controller.currentDay.isRestDay, true);
-      expect(find.text('Rest & Recovery'), findsWidgets);
+      expect(find.text('No training'), findsOneWidget);
 
-      // Tap Rest Day chip again to un-toggle
-      await tester.tap(find.text('Rest Day'));
+      // Tap Rest day again to un-toggle
+      await tester.tap(find.text('Rest day'));
       await tester.pumpAndSettle();
       expect(controller.currentDay.isRestDay, false);
     });
@@ -558,21 +560,12 @@ void main() {
       // Verify sheet is open
       expect(find.text('Select Exercise'), findsOneWidget);
 
-      // Select an exercise from list (e.g. Barbell Bench Press)
+      // Selecting an exercise adds it immediately.
       final exerciseCard = find.text('Barbell Bench Press');
       expect(exerciseCard, findsOneWidget);
       await tester.tap(exerciseCard);
       await tester.pumpAndSettle();
 
-      // Verify configure screen
-      expect(find.text('Configure Sets & Weight'), findsOneWidget);
-      expect(find.text('Add to Workout Day'), findsOneWidget);
-
-      // Tap Add to Workout Day
-      await tester.tap(find.text('Add to Workout Day'));
-      await tester.pumpAndSettle();
-
-      // Verify the sheet closed and exercise was added to current day
       expect(find.text('Select Exercise'), findsNothing);
       expect(find.text('Barbell Bench Press'), findsOneWidget);
       expect(controller.selectedDay?.exercises.isNotEmpty, isTrue);
