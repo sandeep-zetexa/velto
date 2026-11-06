@@ -229,6 +229,21 @@ class WorkoutService {
     await _storage.saveWorkoutDailyLog(log.date, log.toMinimalJson());
   }
 
+  /// All persisted daily workout logs, keyed by "yyyy-MM-dd".
+  Future<Map<String, DailyWorkoutLog>> getAllDailyLogs() async {
+    if (_cachedExercises == null) {
+      await getExercises();
+    }
+    final raw = await _storage.getAllWorkoutDailyLogs();
+    final result = <String, DailyWorkoutLog>{};
+    for (final entry in raw.entries) {
+      try {
+        result[entry.key] = DailyWorkoutLog.fromMinimalJson(entry.value, _exerciseMap);
+      } catch (_) {}
+    }
+    return result;
+  }
+
   /// Updates weight, reps, or sets for a specific exercise in a routine day
   Future<void> updateExerciseInRoutineDay({
     required String routineId,

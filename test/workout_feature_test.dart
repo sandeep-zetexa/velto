@@ -262,7 +262,7 @@ void main() {
       expect(find.text(controller.activeRoutine.value!.name), findsWidgets);
 
       // Verify schedule header & day tabs
-      expect(find.text('Weekly Schedule'), findsOneWidget);
+      expect(find.text('This week'), findsOneWidget);
       expect(find.text('Mon'), findsOneWidget);
       expect(find.text('Tue'), findsOneWidget);
       expect(find.text('Wed'), findsOneWidget);
@@ -276,8 +276,8 @@ void main() {
       expect(find.text('Set 1'), findsWidgets);
 
       // Verify Add Exercise button exists
-      await tester.scrollUntilVisible(find.text('Add Exercise to Today'), 500);
-      expect(find.text('Add Exercise to Today'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Add exercise'), 500);
+      expect(find.text('Add exercise'), findsOneWidget);
     });
 
     testWidgets('WorkoutView supports collapsible exercises and Expand/Collapse All', (tester) async {
@@ -508,8 +508,8 @@ void main() {
       expect(find.text('Chest'), findsWidgets);
 
       // Verify day stats badges are rendered in active day card
-      expect(find.textContaining('Exercises'), findsWidgets);
-      expect(find.textContaining('Sets Target'), findsWidgets);
+      expect(find.textContaining('exercises'), findsWidgets);
+      expect(find.textContaining('sets'), findsWidgets);
 
       // If viewing another day other than today, Jump to Today button appears
       final otherIndex = (controller.todayDayIndex + 2) % 7;
@@ -547,11 +547,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Empty state "+ Add Exercises" button should be visible
-      final addExercisesButton = find.text('+ Add Exercises');
+      // Empty state "Add exercises" button should be visible
+      final addExercisesButton = find.text('Add exercises');
       expect(addExercisesButton, findsOneWidget);
 
-      // Tap "+ Add Exercises" to open picker sheet
+      // Tap "Add exercises" to open picker sheet
       await tester.tap(addExercisesButton);
       await tester.pumpAndSettle();
 

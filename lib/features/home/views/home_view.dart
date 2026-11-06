@@ -12,7 +12,7 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = const [
+    const pages = [
       DashboardView(),
       WorkoutView(),
       DietView(),

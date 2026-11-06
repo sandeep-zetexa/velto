@@ -1,17 +1,19 @@
-# velto
+# Velto
 
-A new Flutter project.
+Local-first fitness app for workouts and nutrition.
 
-## Getting Started
+## What it does
 
-This project is a starting point for a Flutter application.
+- **Today** — daily overview: calories, macros, today’s session, weekly consistency
+- **Workout** — weekly routines, set tracking, rest days
+- **Diet** — meal logging with protein / carbs / fats against daily goals
+- **Profile** — theme and on-device preferences
 
-A few resources to get you started if this is your first Flutter project:
+All progress is stored on device via SharedPreferences.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Run
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+flutter run
+```

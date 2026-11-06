@@ -22,14 +22,16 @@ class WorkoutView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final s = AppStyle(isDark);
-    final controller = Get.put(WorkoutController());
+    final controller = Get.isRegistered<WorkoutController>()
+        ? Get.find<WorkoutController>()
+        : Get.put(WorkoutController());
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           AppSliverAppBar(
             title: 'Workout',
-            subtitle: 'Training & Routines',
+            subtitle: 'Your weekly plan',
             isDark: isDark,
           ),
 
@@ -51,9 +53,10 @@ class WorkoutView extends StatelessWidget {
                   child: AppEmptyState(
                     isDark: isDark,
                     icon: LucideIcons.dumbbell,
-                    title: 'No Workout Routine Active',
-                    subtitle: 'You haven\'t set up a workout routine yet.\nTap below to build your custom weekly split.',
-                    actionLabel: 'Create Routine',
+                    title: 'No plan yet',
+                    subtitle:
+                        'Build a weekly split so you always know\nwhat to train today.',
+                    actionLabel: 'Create plan',
                     onAction: () => Get.toNamed(Routes.addRoutine),
                   ),
                 );
@@ -110,7 +113,7 @@ class WorkoutView extends StatelessWidget {
                                     ],
                                   ),
                                   Text(
-                                    'Active Plan · Tap to switch',
+                                    'Active plan · tap to switch',
                                     style: GoogleFonts.manrope(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w500,
@@ -145,7 +148,7 @@ class WorkoutView extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Weekly Schedule',
+                              'This week',
                               style: GoogleFonts.manrope(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -307,7 +310,7 @@ class WorkoutView extends StatelessWidget {
                                       Flexible(
                                         child: Text(
                                           selectedDay.isRestDay
-                                              ? 'Rest & Muscle Recovery'
+                                              ? 'Rest & recovery'
                                               : selectedDay.musclesDisplay,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -343,8 +346,8 @@ class WorkoutView extends StatelessWidget {
                                   const SizedBox(height: 2),
                                   Text(
                                     selectedDay.isRestDay
-                                        ? 'Active recovery & hydration'
-                                        : '${selectedDay.exercises.length} Exercises · ${selectedDay.totalSets} Sets Target',
+                                        ? 'Recover, hydrate, and eat well'
+                                        : '${selectedDay.exercises.length} exercises · ${selectedDay.totalSets} sets',
                                     style: GoogleFonts.manrope(
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w500,
@@ -442,7 +445,7 @@ class WorkoutView extends StatelessWidget {
                             Icon(LucideIcons.sparkles, size: 40, color: AppColors.green),
                             const SizedBox(height: AppSizes.sm),
                             Text(
-                              'Rest & Muscle Recovery',
+                              'Rest day',
                               style: GoogleFonts.manrope(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
@@ -451,7 +454,7 @@ class WorkoutView extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'No heavy lifting scheduled today.\nFocus on recovery, hydration, and healthy nutrition.',
+                              'No heavy lifting today.\nFocus on recovery, sleep, and nutrition.',
                               textAlign: TextAlign.center,
                               style: GoogleFonts.manrope(
                                 fontSize: 12,
@@ -466,10 +469,12 @@ class WorkoutView extends StatelessWidget {
                       AppEmptyState(
                         isDark: isDark,
                         icon: LucideIcons.dumbbell,
-                        title: 'No Exercises Added for ${selectedDay.dayName}',
-                        subtitle: 'Tap below to add exercises for ${selectedDay.musclesDisplay}.',
-                        actionLabel: '+ Add Exercises',
-                        onAction: () => _openAddExercise(context, controller, selectedDay),
+                        title: 'No exercises for ${selectedDay.dayName}',
+                        subtitle:
+                            'Add moves for ${selectedDay.musclesDisplay} to start training.',
+                        actionLabel: 'Add exercises',
+                        onAction: () =>
+                            _openAddExercise(context, controller, selectedDay),
                       )
                     else ...[
                       // Exercises List Header with Quick Add & Expand/Collapse All
@@ -891,11 +896,12 @@ class WorkoutView extends StatelessWidget {
                     if (!selectedDay.isRestDay) ...[
                       const SizedBox(height: AppSizes.sm),
                       AppButton.outline(
-                        text: 'Add Exercise to Today',
+                        text: 'Add exercise',
                         icon: LucideIcons.plus,
                         size: AppButtonSize.md,
                         fullWidth: true,
-                        onPressed: () => _openAddExercise(context, controller, selectedDay),
+                        onPressed: () =>
+                            _openAddExercise(context, controller, selectedDay),
                       ),
                     ],
                 ]),

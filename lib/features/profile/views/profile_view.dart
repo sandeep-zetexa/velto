@@ -5,6 +5,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:velto/core/constants/app_colors.dart';
 import 'package:velto/core/constants/app_sizes.dart';
 import 'package:velto/core/widgets/app_widgets.dart';
+import 'package:velto/features/dashboard/controllers/dashboard_controller.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -13,91 +14,184 @@ class ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final s = AppStyle(isDark);
+    final dash = Get.isRegistered<DashboardController>()
+        ? Get.find<DashboardController>()
+        : null;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           AppSliverAppBar(
             title: 'Profile',
-            subtitle: 'Account',
+            subtitle: 'Preferences',
             isDark: isDark,
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(AppSizes.screenPadding, AppSizes.sm, AppSizes.screenPadding, 120),
-            sliver: SliverList(delegate: SliverChildListDelegate([
-
-              // Avatar
-              AppCard(isDark: isDark, child: Row(children: [
-                Container(
-                  width: 58, height: 58,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: s.brandSoft),
-                  child: Icon(LucideIcons.user, color: s.brand, size: 28),
-                ),
-                const SizedBox(width: AppSizes.md),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Alex Mercer', style: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.3)),
-                  const SizedBox(height: 2),
-                  Text('alex.mercer@velto.io', style: GoogleFonts.manrope(fontSize: 12, color: s.secondary)),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: s.brandSoft, borderRadius: BorderRadius.circular(6)),
-                    child: Text('Pro Member', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: s.brand)),
+            padding: const EdgeInsets.fromLTRB(
+              AppSizes.screenPadding,
+              AppSizes.sm,
+              AppSizes.screenPadding,
+              120,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                AppCard(
+                  isDark: isDark,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: s.brandSoft,
+                        ),
+                        child: Icon(LucideIcons.user, color: s.brand, size: 28),
+                      ),
+                      const SizedBox(width: AppSizes.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Velto Athlete',
+                              style: GoogleFonts.manrope(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: s.primary,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Training & nutrition on this device',
+                              style: GoogleFonts.manrope(
+                                fontSize: 12,
+                                color: s.secondary,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: s.brandSoft,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Local profile',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: s.brand,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ])),
-                Icon(LucideIcons.pen, size: 17, color: s.tertiary),
-              ])),
-              const SizedBox(height: AppSizes.lg),
-
-              // Stats
-              Row(children: [
-                Expanded(child: _StatBand('24', 'Workouts', LucideIcons.activity, s)),
-                const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatBand('−4.2 kg', 'Lost', LucideIcons.trending_down, s)),
-                const SizedBox(width: AppSizes.md),
-                Expanded(child: _StatBand('14', 'Streak', LucideIcons.zap, s)),
-              ]),
-              const SizedBox(height: AppSizes.xl),
-
-              _Label('Settings', s),
-              const SizedBox(height: AppSizes.sm),
-              _Tile(icon: LucideIcons.user, iconBg: s.brandSoft, iconColor: s.brand, title: 'Account Information', isDark: isDark, s: s, onTap: () {}),
-              _Tile(icon: LucideIcons.bell, iconBg: isDark ? AppColors.secondarySoftDark : AppColors.secondarySoft, iconColor: isDark ? const Color(0xFF94A3B8) : AppColors.secondary, title: 'Notifications', isDark: isDark, s: s, onTap: () {}),
-              _Tile(
-                icon: isDark ? LucideIcons.sun : LucideIcons.moon,
-                iconBg: isDark ? AppColors.amberSoftDark : AppColors.amberSoft,
-                iconColor: AppColors.amber,
-                title: isDark ? 'Light Mode' : 'Dark Mode',
-                isDark: isDark, s: s,
-                onTap: () => Get.changeThemeMode(isDark ? ThemeMode.light : ThemeMode.dark),
-                trailing: Switch(
-                  value: isDark,
-                  onChanged: (v) => Get.changeThemeMode(v ? ThemeMode.dark : ThemeMode.light),
-                  activeThumbColor: Colors.white,
-                  activeTrackColor: s.brand,
-                  inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: s.border,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-              ),
-              const SizedBox(height: AppSizes.xl),
+                const SizedBox(height: AppSizes.lg),
 
-              _Label('Support', s),
-              const SizedBox(height: AppSizes.sm),
-              _Tile(icon: LucideIcons.circle_question_mark, iconBg: s.brandSoft, iconColor: s.brand, title: 'Help Center', isDark: isDark, s: s, onTap: () {}),
-              _Tile(icon: LucideIcons.shield_check, iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft, iconColor: isDark ? const Color(0xFF60A5FA) : AppColors.blue, title: 'Privacy Policy', isDark: isDark, s: s, onTap: () {}),
-              const SizedBox(height: AppSizes.xl),
+                Obx(() {
+                  final workouts = dash?.weekWorkoutsDone.value ?? 0;
+                  final meals = dash?.weekDaysLoggedMeals.value ?? 0;
+                  final planned = dash?.weekWorkoutsPlanned.value ?? 0;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _StatBand(
+                          '$workouts',
+                          'This week',
+                          LucideIcons.dumbbell,
+                          s,
+                        ),
+                      ),
+                      const SizedBox(width: AppSizes.md),
+                      Expanded(
+                        child: _StatBand(
+                          '$meals',
+                          'Meal days',
+                          LucideIcons.utensils,
+                          s,
+                        ),
+                      ),
+                      const SizedBox(width: AppSizes.md),
+                      Expanded(
+                        child: _StatBand(
+                          planned > 0 ? '$workouts/$planned' : '—',
+                          'Plan pace',
+                          LucideIcons.zap,
+                          s,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+                const SizedBox(height: AppSizes.xl),
 
-              AppButton(
-                text: 'Log Out',
-                icon: LucideIcons.log_out,
-                variant: AppButtonVariant.dangerOutline,
-                size: AppButtonSize.lg,
-                fullWidth: true,
-                onPressed: () {},
-              ),
-            ])),
+                _Label('Appearance', s),
+                const SizedBox(height: AppSizes.sm),
+                _Tile(
+                  icon: isDark ? LucideIcons.sun : LucideIcons.moon,
+                  iconBg: isDark ? AppColors.amberSoftDark : AppColors.amberSoft,
+                  iconColor: AppColors.amber,
+                  title: isDark ? 'Switch to light mode' : 'Switch to dark mode',
+                  isDark: isDark,
+                  s: s,
+                  onTap: () => Get.changeThemeMode(
+                    isDark ? ThemeMode.light : ThemeMode.dark,
+                  ),
+                  trailing: Switch(
+                    value: isDark,
+                    onChanged: (v) => Get.changeThemeMode(
+                      v ? ThemeMode.dark : ThemeMode.light,
+                    ),
+                    activeThumbColor: Colors.white,
+                    activeTrackColor: s.brand,
+                    inactiveThumbColor: Colors.white,
+                    inactiveTrackColor: s.border,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+                const SizedBox(height: AppSizes.xl),
+
+                _Label('About', s),
+                const SizedBox(height: AppSizes.sm),
+                _Tile(
+                  icon: LucideIcons.info,
+                  iconBg: s.brandSoft,
+                  iconColor: s.brand,
+                  title: 'Velto · Fitness tracker',
+                  isDark: isDark,
+                  s: s,
+                  onTap: () {},
+                  trailing: Text(
+                    'v1.0',
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: s.tertiary,
+                    ),
+                  ),
+                ),
+                _Tile(
+                  icon: LucideIcons.database,
+                  iconBg: isDark ? AppColors.blueSoftDark : AppColors.blueSoft,
+                  iconColor: isDark ? const Color(0xFF60A5FA) : AppColors.blue,
+                  title: 'Data stays on your device',
+                  isDark: isDark,
+                  s: s,
+                  onTap: () {},
+                  trailing: const SizedBox.shrink(),
+                ),
+              ]),
+            ),
           ),
         ],
       ),
@@ -110,8 +204,15 @@ class _Label extends StatelessWidget {
   final AppStyle s;
   const _Label(this.text, this.s);
   @override
-  Widget build(BuildContext context) => Text(text.toUpperCase(),
-      style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.3, color: s.secondary));
+  Widget build(BuildContext context) => Text(
+        text.toUpperCase(),
+        style: GoogleFonts.manrope(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.3,
+          color: s.secondary,
+        ),
+      );
 }
 
 class _StatBand extends StatelessWidget {
@@ -121,15 +222,35 @@ class _StatBand extends StatelessWidget {
   const _StatBand(this.value, this.label, this.icon, this.s);
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(vertical: AppSizes.md, horizontal: AppSizes.sm),
-    decoration: BoxDecoration(color: s.surface, borderRadius: BorderRadius.circular(AppSizes.radiusLg), border: Border.all(color: s.border)),
-    child: Column(children: [
-      Icon(icon, size: 18, color: s.brand),
-      const SizedBox(height: 5),
-      Text(value, style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w800, color: s.primary, letterSpacing: -0.2)),
-      Text(label, style: GoogleFonts.manrope(fontSize: 10, color: s.secondary)),
-    ]),
-  );
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSizes.md,
+          horizontal: AppSizes.sm,
+        ),
+        decoration: BoxDecoration(
+          color: s.surface,
+          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+          border: Border.all(color: s.border),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 18, color: s.brand),
+            const SizedBox(height: 5),
+            Text(
+              value,
+              style: GoogleFonts.manrope(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: s.primary,
+                letterSpacing: -0.2,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.manrope(fontSize: 10, color: s.secondary),
+            ),
+          ],
+        ),
+      );
 }
 
 class _Tile extends StatelessWidget {
@@ -140,27 +261,59 @@ class _Tile extends StatelessWidget {
   final AppStyle s;
   final Widget? trailing;
   final VoidCallback onTap;
-  const _Tile({required this.icon, required this.iconBg, required this.iconColor, required this.title, required this.isDark, required this.s, this.trailing, required this.onTap});
+  const _Tile({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.title,
+    required this.isDark,
+    required this.s,
+    this.trailing,
+    required this.onTap,
+  });
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: AppSizes.sm),
-    child: Material(
-      color: s.surface,
-      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        child: Container(
-          padding: const EdgeInsets.all(AppSizes.md),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(AppSizes.radiusLg), border: Border.all(color: s.border)),
-          child: Row(children: [
-            Container(width: 36, height: 36, decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(9)), child: Icon(icon, size: 17, color: iconColor)),
-            const SizedBox(width: AppSizes.md),
-            Expanded(child: Text(title, style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w600, color: s.primary))),
-            trailing ?? Icon(LucideIcons.chevron_right, size: 15, color: s.tertiary),
-          ]),
+        padding: const EdgeInsets.only(bottom: AppSizes.sm),
+        child: Material(
+          color: s.surface,
+          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+            child: Container(
+              padding: const EdgeInsets.all(AppSizes.md),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                border: Border.all(color: s.border),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(icon, size: 17, color: iconColor),
+                  ),
+                  const SizedBox(width: AppSizes.md),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.manrope(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: s.primary,
+                      ),
+                    ),
+                  ),
+                  trailing ??
+                      Icon(LucideIcons.chevron_right, size: 15, color: s.tertiary),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }

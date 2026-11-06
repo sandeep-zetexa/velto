@@ -74,9 +74,16 @@ class AppIconBtn extends StatelessWidget {
 class AppSectionHeader extends StatelessWidget {
   final String title;
   final String? action;
+  final VoidCallback? onAction;
   final bool isDark;
 
-  const AppSectionHeader({super.key, required this.title, this.action, required this.isDark});
+  const AppSectionHeader({
+    super.key,
+    required this.title,
+    this.action,
+    this.onAction,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +92,11 @@ class AppSectionHeader extends StatelessWidget {
       Text(title, style: GoogleFonts.manrope(
           fontSize: 15, fontWeight: FontWeight.w700, color: s.primary, letterSpacing: -0.2)),
       if (action != null)
-        Text(action!, style: GoogleFonts.manrope(
-            fontSize: 12, fontWeight: FontWeight.w600, color: s.brand)),
+        GestureDetector(
+          onTap: onAction,
+          child: Text(action!, style: GoogleFonts.manrope(
+              fontSize: 12, fontWeight: FontWeight.w600, color: s.brand)),
+        ),
     ]);
   }
 }

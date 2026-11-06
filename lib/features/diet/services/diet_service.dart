@@ -181,6 +181,18 @@ class DietService {
     await _storage.saveDietDailyLog(log.date, log.toJson());
   }
 
+  /// All persisted daily diet logs, keyed by "yyyy-MM-dd".
+  Future<Map<String, DailyDietLog>> getAllDailyLogs() async {
+    final raw = await _storage.getAllDietDailyLogs();
+    final result = <String, DailyDietLog>{};
+    for (final entry in raw.entries) {
+      try {
+        result[entry.key] = DailyDietLog.fromJson(entry.value);
+      } catch (_) {}
+    }
+    return result;
+  }
+
   // ───────────────────────────────────────────────────────────────────────────
   // Static Mock JSON Data
   // ───────────────────────────────────────────────────────────────────────────

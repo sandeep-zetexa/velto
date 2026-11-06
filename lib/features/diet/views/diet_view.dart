@@ -88,14 +88,16 @@ class DietView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final s = AppStyle(isDark);
-    final controller = Get.put(DietController());
+    final controller = Get.isRegistered<DietController>()
+        ? Get.find<DietController>()
+        : Get.put(DietController());
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           AppSliverAppBar(
             title: 'Diet',
-            subtitle: 'Nutrition',
+            subtitle: 'Meals & macros',
             isDark: isDark,
           ),
 
@@ -115,7 +117,7 @@ class DietView extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Nutrition Tracker',
+                              'This week',
                               style: GoogleFonts.manrope(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -307,7 +309,10 @@ class DietView extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Today\'s Calories',
+                                        controller.selectedDayIndex.value ==
+                                                controller.todayDayIndex
+                                            ? 'Calories today'
+                                            : 'Calories logged',
                                         style: GoogleFonts.manrope(
                                           fontSize: 11.5,
                                           fontWeight: FontWeight.w600,
@@ -460,9 +465,10 @@ class DietView extends StatelessWidget {
                     AppEmptyState(
                       isDark: isDark,
                       icon: LucideIcons.utensils_crossed,
-                      title: 'Nothing logged yet',
-                      subtitle: 'Tap "Log meal" to track your\nfirst meal of the day.',
-                      actionLabel: '+ Log meal',
+                      title: 'No meals yet',
+                      subtitle:
+                          'Log breakfast, lunch, or a snack to\ntrack calories and macros.',
+                      actionLabel: 'Log meal',
                       onAction: _openLogMeal,
                     )
                   else

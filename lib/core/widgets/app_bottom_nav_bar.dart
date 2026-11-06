@@ -16,10 +16,10 @@ class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({super.key, required this.currentIndex, required this.onTap});
 
   static const _items = [
-    _NavItem(icon: LucideIcons.layout_dashboard, label: 'Dashboard'),
-    _NavItem(icon: LucideIcons.dumbbell,         label: 'Workout'),
-    _NavItem(icon: LucideIcons.apple,            label: 'Diet'),
-    _NavItem(icon: LucideIcons.user,             label: 'Profile'),
+    _NavItem(icon: LucideIcons.house,    label: 'Today'),
+    _NavItem(icon: LucideIcons.dumbbell, label: 'Workout'),
+    _NavItem(icon: LucideIcons.utensils, label: 'Diet'),
+    _NavItem(icon: LucideIcons.user,     label: 'Profile'),
   ];
 
   @override
